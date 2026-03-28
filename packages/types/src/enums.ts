@@ -1,0 +1,135 @@
+export enum Role {
+  SUPER_ADMIN = 'SUPER_ADMIN',
+  ADMIN = 'ADMIN',
+  WARDEN = 'WARDEN',
+  STAFF = 'STAFF',
+  STUDENT = 'STUDENT',
+}
+
+export enum Gender {
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+  OTHER = 'OTHER',
+}
+
+export enum RoomStatus {
+  AVAILABLE = 'AVAILABLE',
+  OCCUPIED = 'OCCUPIED',
+  PARTIALLY_OCCUPIED = 'PARTIALLY_OCCUPIED',
+  UNDER_MAINTENANCE = 'UNDER_MAINTENANCE',
+}
+
+export enum RoomType {
+  SINGLE = 'SINGLE',
+  DOUBLE = 'DOUBLE',
+  TRIPLE = 'TRIPLE',
+  DORMITORY = 'DORMITORY',
+}
+
+export enum BedStatus {
+  VACANT = 'VACANT',
+  OCCUPIED = 'OCCUPIED',
+  RESERVED = 'RESERVED',
+  MAINTENANCE = 'MAINTENANCE',
+}
+
+export enum ComplaintStatus {
+  OPEN = 'OPEN',
+  ASSIGNED = 'ASSIGNED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  RESOLVED = 'RESOLVED',
+  CLOSED = 'CLOSED',
+  REOPENED = 'REOPENED',
+}
+
+export enum ComplaintPriority {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+  URGENT = 'URGENT',
+}
+
+export enum ComplaintCategory {
+  ELECTRICAL = 'ELECTRICAL',
+  PLUMBING = 'PLUMBING',
+  FURNITURE = 'FURNITURE',
+  CLEANING = 'CLEANING',
+  INTERNET = 'INTERNET',
+  PEST_CONTROL = 'PEST_CONTROL',
+  SECURITY = 'SECURITY',
+  OTHER = 'OTHER',
+}
+
+export enum FeeType {
+  HOSTEL_FEE = 'HOSTEL_FEE',
+  MESS_FEE = 'MESS_FEE',
+  MAINTENANCE_FEE = 'MAINTENANCE_FEE',
+  SECURITY_DEPOSIT = 'SECURITY_DEPOSIT',
+  FINE = 'FINE',
+  OTHER = 'OTHER',
+}
+
+export enum FeeStatus {
+  PENDING = 'PENDING',
+  PAID = 'PAID',
+  OVERDUE = 'OVERDUE',
+  WAIVED = 'WAIVED',
+  PARTIALLY_PAID = 'PARTIALLY_PAID',
+}
+
+export enum PaymentMethod {
+  CASH = 'CASH',
+  UPI = 'UPI',
+  BANK_TRANSFER = 'BANK_TRANSFER',
+  CARD = 'CARD',
+  CHEQUE = 'CHEQUE',
+}
+
+export enum MealType {
+  BREAKFAST = 'BREAKFAST',
+  LUNCH = 'LUNCH',
+  SNACKS = 'SNACKS',
+  DINNER = 'DINNER',
+}
+
+export enum DayOfWeek {
+  MONDAY = 'MONDAY',
+  TUESDAY = 'TUESDAY',
+  WEDNESDAY = 'WEDNESDAY',
+  THURSDAY = 'THURSDAY',
+  FRIDAY = 'FRIDAY',
+  SATURDAY = 'SATURDAY',
+  SUNDAY = 'SUNDAY',
+}
+
+export enum GatePassStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  CHECKED_OUT = 'CHECKED_OUT',
+  RETURNED = 'RETURNED',
+  EXPIRED = 'EXPIRED',
+}
+
+export enum GatePassType {
+  LOCAL = 'LOCAL',
+  HOME = 'HOME',
+  EMERGENCY = 'EMERGENCY',
+  MEDICAL = 'MEDICAL',
+}
+
+export enum NotificationType {
+  INFO = 'INFO',
+  WARNING = 'WARNING',
+  SUCCESS = 'SUCCESS',
+  ERROR = 'ERROR',
+  ANNOUNCEMENT = 'ANNOUNCEMENT',
+}
+
+export enum StudentStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  CHECKED_OUT = 'CHECKED_OUT',
+  GRADUATED = 'GRADUATED',
+}
