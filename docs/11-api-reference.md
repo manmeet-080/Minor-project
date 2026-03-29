@@ -194,4 +194,4 @@ Error responses:
 |--------|------|------|-------------|
 | GET | `/api/health` | - | Returns `{ status: "ok", timestamp }` |
 
-**Total: 79 endpoints across 15 modules**
+**Total: 88 endpoints across 15 modules**

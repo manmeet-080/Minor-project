@@ -22,10 +22,10 @@ Complete documentation for the Campusphere Smart Campus Management Platform.
 
 | Metric | Count |
 |--------|-------|
-| API Endpoints | 79 |
+| API Endpoints | 88 |
 | Backend Modules | 15 |
 | Frontend Pages | 29 |
-| Database Models | 18 |
+| Database Models | 19 |
 | Chart Components | 10 |
 | User Roles | 5 |
 | Socket.io Events | 7 |
