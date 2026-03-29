@@ -48,8 +48,8 @@ export default function StaffAttendancePage() {
   });
 
   const markMutation = useMutation({
-    mutationFn: async (studentId: string) => {
-      await api.post('/attendance', { studentId, hostelId, date, status: selectedStatus });
+    mutationFn: async ({ studentId, status }: { studentId: string; status: string }) => {
+      await api.post('/attendance', { studentId, hostelId, date, status });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['daily-attendance'] });
@@ -175,7 +175,7 @@ export default function StaffAttendancePage() {
                             variant="ghost"
                             className="h-8 w-8 p-0"
                             title={s.label}
-                            onClick={() => markMutation.mutate(student.id)}
+                            onClick={() => markMutation.mutate({ studentId: student.id, status: s.value })}
                             disabled={markMutation.isPending}
                           >
                             <Icon className={`h-4 w-4 ${s.color}`} />

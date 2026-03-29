@@ -220,7 +220,7 @@ export default function SettingsPage() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('staff');
 
-  // Notification state
+  // Notification state — persisted to localStorage
   const [emailNotif, setEmailNotif] = useState(true);
   const [smsNotif, setSmsNotif] = useState(false);
   const [pushNotif, setPushNotif] = useState(true);
@@ -228,6 +228,22 @@ export default function SettingsPage() {
   const [feeReminders, setFeeReminders] = useState(true);
   const [gatePassApprovals, setGatePassApprovals] = useState(true);
   const [systemAnnouncements, setSystemAnnouncements] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('campusphere-notif-prefs');
+      if (saved) {
+        const prefs = JSON.parse(saved);
+        setEmailNotif(prefs.emailNotif ?? true);
+        setSmsNotif(prefs.smsNotif ?? false);
+        setPushNotif(prefs.pushNotif ?? true);
+        setComplaintUpdates(prefs.complaintUpdates ?? true);
+        setFeeReminders(prefs.feeReminders ?? true);
+        setGatePassApprovals(prefs.gatePassApprovals ?? true);
+        setSystemAnnouncements(prefs.systemAnnouncements ?? false);
+      }
+    } catch {}
+  }, []);
 
   // Security state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -271,19 +287,43 @@ export default function SettingsPage() {
     updateHostelMutation.mutate();
   }
 
+  const inviteMutation = useMutation({
+    mutationFn: async () => {
+      await api.post('/users', {
+        email: inviteEmail,
+        password: 'Temp@1234',
+        name: inviteEmail.split('@')[0],
+        role: inviteRole.toUpperCase(),
+        hostelId,
+      });
+    },
+    onSuccess: () => {
+      toast.success(`Team member created: ${inviteEmail} (temp password: Temp@1234)`);
+      setInviteEmail('');
+      setInviteRole('staff');
+      setInviteOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['users', hostelId] });
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to create team member'),
+  });
+
   function handleInvite() {
     if (!inviteEmail) {
       toast.error('Please enter an email address');
       return;
     }
-    toast.success(`Invitation sent to ${inviteEmail}`);
-    setInviteEmail('');
-    setInviteRole('staff');
-    setInviteOpen(false);
+    inviteMutation.mutate();
   }
 
   function handleSaveNotifications() {
-    toast.success('Notification preferences saved');
+    try {
+      localStorage.setItem('campusphere-notif-prefs', JSON.stringify({
+        emailNotif, smsNotif, pushNotif, complaintUpdates, feeReminders, gatePassApprovals, systemAnnouncements,
+      }));
+      toast.success('Notification preferences saved');
+    } catch {
+      toast.error('Failed to save preferences');
+    }
   }
 
   function handleChangePassword() {
@@ -302,9 +342,23 @@ export default function SettingsPage() {
     changePasswordMutation.mutate();
   }
 
+  const revokeSessionsMutation = useMutation({
+    mutationFn: async () => {
+      await api.post('/auth/logout');
+    },
+    onSuccess: () => {
+      toast.success('All sessions revoked. You will be logged out.');
+      setRevokeDialogOpen(false);
+      setTimeout(() => {
+        useAuthStore.getState().logout();
+        window.location.href = '/login';
+      }, 1500);
+    },
+    onError: () => toast.error('Failed to revoke sessions'),
+  });
+
   function handleRevokeAllSessions() {
-    toast.success('All other sessions have been revoked');
-    setRevokeDialogOpen(false);
+    revokeSessionsMutation.mutate();
   }
 
   const teamMembers = (teamData || []).map((u: any) => ({

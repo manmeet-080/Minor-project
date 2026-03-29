@@ -48,7 +48,7 @@ function getDefaultDateRange() {
 }
 
 export default function ReportsPage() {
-  const hostelId = useAuthStore((s) => s.user?.hostelId) ?? 'default';
+  const hostelId = useAuthStore((s) => s.user?.hostelId) ?? '';
   const defaults = getDefaultDateRange();
 
   const [reportType, setReportType] = useState<ReportType>('occupancy');
@@ -68,7 +68,7 @@ export default function ReportsPage() {
       });
       return res.data.data;
     },
-    enabled: !!startDate && !!endDate,
+    enabled: !!hostelId && !!startDate && !!endDate,
   });
 
   const occupancyChartData = useMemo(() => {
@@ -124,10 +124,11 @@ export default function ReportsPage() {
       let csvContent = '';
       const summary = reportData.summary || reportData;
       const rows = Object.entries(summary).filter(([, v]) => typeof v !== 'object');
+      const csvEscape = (s: string) => String(s).replace(/"/g, '""');
       csvContent += 'Metric,Value\n';
       rows.forEach(([key, value]) => {
         const label = key.replace(/([A-Z])/g, ' $1').trim();
-        csvContent += `"${label}","${value}"\n`;
+        csvContent += `"${csvEscape(label)}","${csvEscape(String(value))}"\n`;
       });
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
