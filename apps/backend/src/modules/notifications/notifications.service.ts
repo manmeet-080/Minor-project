@@ -1,5 +1,6 @@
 import { prisma } from '../../config/database.js';
 import { NotificationType } from '@prisma/client';
+import { events } from '../../sockets/events.js';
 
 export class NotificationsService {
   async list(userId: string, query: { page?: number; limit?: number; unreadOnly?: boolean }) {
@@ -63,6 +64,7 @@ export class NotificationsService {
       })),
     });
 
+    events.broadcastNotification(hostelId, { title, message });
     return { sent: users.length };
   }
 }
