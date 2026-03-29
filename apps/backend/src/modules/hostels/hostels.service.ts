@@ -2,6 +2,14 @@ import { prisma } from '../../config/database.js';
 import { AppError } from '../../shared/middleware/errorHandler.js';
 
 export class HostelsService {
+  async list() {
+    return prisma.hostel.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true, code: true, gender: true },
+      orderBy: { name: 'asc' },
+    });
+  }
+
   async getById(id: string) {
     const hostel = await prisma.hostel.findUnique({
       where: { id },

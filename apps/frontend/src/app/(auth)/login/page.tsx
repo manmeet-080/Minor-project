@@ -212,21 +212,30 @@ export default function LoginPage() {
               <div className="rounded-lg bg-background p-2">
                 <p className="font-medium">Admin</p>
                 <p className="text-muted-foreground">admin@campusphere.edu</p>
+                <p className="text-muted-foreground/70">admin123</p>
               </div>
               <div className="rounded-lg bg-background p-2">
                 <p className="font-medium">Student</p>
-                <p className="text-muted-foreground">arun@student.edu</p>
+                <p className="text-muted-foreground">cs2024001@student.edu</p>
+                <p className="text-muted-foreground/70">student123</p>
+              </div>
+              <div className="rounded-lg bg-background p-2">
+                <p className="font-medium">Warden</p>
+                <p className="text-muted-foreground">warden@campusphere.edu</p>
+                <p className="text-muted-foreground/70">warden123</p>
               </div>
               <div className="rounded-lg bg-background p-2">
                 <p className="font-medium">Staff</p>
-                <p className="text-muted-foreground">staff@campusphere.edu</p>
-              </div>
-              <div className="rounded-lg bg-background p-2 text-muted-foreground">
-                <p className="font-medium text-foreground">Password</p>
-                <p>*123 (role prefix)</p>
+                <p className="text-muted-foreground">ramesh.yadav@campusphere.edu</p>
+                <p className="text-muted-foreground/70">staff123</p>
               </div>
             </div>
           </div>
+
+          <p className="text-center text-sm text-muted-foreground mt-4">
+            Don&apos;t have an account?{' '}
+            <a href="/register" className="text-primary font-medium hover:underline">Register here</a>
+          </p>
         </motion.div>
       </div>
     </div>
