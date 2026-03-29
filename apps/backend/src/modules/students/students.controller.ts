@@ -41,3 +41,8 @@ export const update = asyncHandler(async (req: Request, res: Response) => {
   const student = await studentsService.update(req.params.id, req.body);
   success(res, student, 'Student updated');
 });
+
+export const transfer = asyncHandler(async (req: Request, res: Response) => {
+  const student = await studentsService.transfer(req.params.id, req.body.newBedId);
+  success(res, student, 'Student transferred');
+});
