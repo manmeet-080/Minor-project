@@ -19,8 +19,12 @@ const createSchema = z.object({
 
 router.get('/', authenticate, ctrl.list);
 router.post('/', authenticate, validate(createSchema), ctrl.create);
-router.patch('/:id/approve', authenticate, authorize('ADMIN', 'WARDEN', 'SUPER_ADMIN'), ctrl.approve);
-router.patch('/:id/reject', authenticate, authorize('ADMIN', 'WARDEN', 'SUPER_ADMIN'), ctrl.reject);
+const remarksSchema = z.object({
+  remarks: z.string().optional(),
+});
+
+router.patch('/:id/approve', authenticate, authorize('ADMIN', 'WARDEN', 'SUPER_ADMIN'), validate(remarksSchema), ctrl.approve);
+router.patch('/:id/reject', authenticate, authorize('ADMIN', 'WARDEN', 'SUPER_ADMIN'), validate(remarksSchema), ctrl.reject);
 router.patch('/:id/checkout', authenticate, ctrl.checkOut);
 router.patch('/:id/return', authenticate, ctrl.markReturned);
 
