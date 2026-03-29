@@ -28,6 +28,10 @@ export const broadcast = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const sos = asyncHandler(async (req: Request, res: Response) => {
-  const result = await notificationsService.sendSOS(req.user!.userId, req.user!.hostelId!);
+  if (!req.user!.hostelId) {
+    res.status(400).json({ success: false, message: 'No hostel associated with your account' });
+    return;
+  }
+  const result = await notificationsService.sendSOS(req.user!.userId, req.user!.hostelId);
   success(res, result, 'SOS alert sent');
 });

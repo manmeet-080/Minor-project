@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authenticate } from '../../shared/middleware/authenticate.js';
 import { authorize } from '../../shared/middleware/authorize.js';
 import { validate } from '../../shared/middleware/validate.js';
+import { rateLimiter } from '../../shared/middleware/rateLimiter.js';
 import { z } from 'zod';
 import * as ctrl from './notifications.controller.js';
 
@@ -17,6 +18,6 @@ router.get('/', authenticate, ctrl.list);
 router.patch('/:id/read', authenticate, ctrl.markAsRead);
 router.patch('/read-all', authenticate, ctrl.markAllAsRead);
 router.post('/broadcast', authenticate, authorize('ADMIN', 'WARDEN', 'SUPER_ADMIN'), validate(broadcastSchema), ctrl.broadcast);
-router.post('/sos', authenticate, ctrl.sos);
+router.post('/sos', authenticate, rateLimiter('sos', 3, 900), ctrl.sos); // max 3 SOS per 15 minutes
 
 export default router;
