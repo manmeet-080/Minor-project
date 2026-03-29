@@ -27,6 +27,10 @@ router.get('/student/:studentId/balance', authenticate, ctrl.getStudentBalance);
 router.get('/:id', authenticate, ctrl.getById);
 router.post('/', authenticate, authorize('ADMIN', 'SUPER_ADMIN'), validate(createSchema), ctrl.create);
 router.patch('/:id/pay', authenticate, authorize('ADMIN', 'SUPER_ADMIN'), validate(paymentSchema), ctrl.recordPayment);
-router.patch('/:id/waive', authenticate, authorize('ADMIN', 'SUPER_ADMIN'), ctrl.waive);
+const waiveSchema = z.object({
+  remarks: z.string().min(3),
+});
+
+router.patch('/:id/waive', authenticate, authorize('ADMIN', 'SUPER_ADMIN'), validate(waiveSchema), ctrl.waive);
 
 export default router;
