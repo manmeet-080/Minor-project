@@ -30,7 +30,16 @@ const createBlockSchema = z.object({
 router.get('/', authenticate, ctrl.listRooms);
 router.get('/:id', authenticate, ctrl.getRoom);
 router.post('/', authenticate, authorize('ADMIN', 'SUPER_ADMIN'), validate(createRoomSchema), ctrl.createRoom);
-router.patch('/:id', authenticate, authorize('ADMIN', 'WARDEN', 'SUPER_ADMIN'), ctrl.updateRoom);
+const updateRoomSchema = z.object({
+  roomNumber: z.string().min(1).optional(),
+  floor: z.number().int().min(0).optional(),
+  type: z.enum(['SINGLE', 'DOUBLE', 'TRIPLE', 'DORMITORY']).optional(),
+  capacity: z.number().int().min(1).max(20).optional(),
+  status: z.enum(['AVAILABLE', 'OCCUPIED', 'PARTIALLY_OCCUPIED', 'UNDER_MAINTENANCE']).optional(),
+  amenities: z.array(z.string()).optional(),
+});
+
+router.patch('/:id', authenticate, authorize('ADMIN', 'WARDEN', 'SUPER_ADMIN'), validate(updateRoomSchema), ctrl.updateRoom);
 router.post('/allocate', authenticate, authorize('ADMIN', 'WARDEN', 'SUPER_ADMIN'), validate(allocateSchema), ctrl.allocateBed);
 router.post('/beds/:bedId/vacate', authenticate, authorize('ADMIN', 'WARDEN', 'SUPER_ADMIN'), ctrl.vacateBed);
 router.get('/blocks/:hostelId', authenticate, ctrl.listBlocks);
