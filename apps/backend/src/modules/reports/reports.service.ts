@@ -109,6 +109,95 @@ export class ReportsService {
 
     return result;
   }
+  async gatePassReport(hostelId: string) {
+    const passes = await prisma.gatePass.findMany({ where: { hostelId } });
+
+    const byType: Record<string, number> = {};
+    const byStatus: Record<string, number> = {};
+    let totalDurationHours = 0;
+    let returnedCount = 0;
+
+    for (const p of passes) {
+      byType[p.type] = (byType[p.type] || 0) + 1;
+      byStatus[p.status] = (byStatus[p.status] || 0) + 1;
+      if (p.actualReturn && p.exitDate) {
+        totalDurationHours += (new Date(p.actualReturn).getTime() - new Date(p.exitDate).getTime()) / (1000 * 60 * 60);
+        returnedCount++;
+      }
+    }
+
+    return {
+      total: passes.length,
+      byType,
+      byStatus,
+      avgDurationHours: returnedCount > 0 ? Math.round((totalDurationHours / returnedCount) * 10) / 10 : 0,
+    };
+  }
+
+  async visitorReport(hostelId: string) {
+    const visitors = await prisma.visitor.findMany({ where: { hostelId } });
+
+    const byMonth: Record<string, number> = {};
+    let currentlyInside = 0;
+
+    for (const v of visitors) {
+      const month = v.entryTime.toLocaleString('default', { month: 'short', year: 'numeric' });
+      byMonth[month] = (byMonth[month] || 0) + 1;
+      if (!v.exitTime) currentlyInside++;
+    }
+
+    return {
+      total: visitors.length,
+      currentlyInside,
+      byMonth,
+    };
+  }
+
+  async messReport(hostelId: string) {
+    const bookings = await prisma.messBooking.findMany({ where: { hostelId } });
+
+    const byMealType: Record<string, { count: number; totalRating: number; ratedCount: number }> = {};
+    for (const b of bookings) {
+      if (!byMealType[b.mealType]) byMealType[b.mealType] = { count: 0, totalRating: 0, ratedCount: 0 };
+      byMealType[b.mealType].count++;
+      if (b.rating) {
+        byMealType[b.mealType].totalRating += b.rating;
+        byMealType[b.mealType].ratedCount++;
+      }
+    }
+
+    const mealStats = Object.entries(byMealType).map(([meal, data]) => ({
+      meal,
+      bookings: data.count,
+      avgRating: data.ratedCount > 0 ? Math.round((data.totalRating / data.ratedCount) * 10) / 10 : null,
+    }));
+
+    return {
+      totalBookings: bookings.length,
+      mealStats,
+    };
+  }
+
+  async loginActivityReport(hostelId: string) {
+    const history = await prisma.loginHistory.findMany({
+      where: { user: { hostelId } },
+      orderBy: { createdAt: 'desc' },
+      take: 500,
+      include: { user: { select: { name: true, role: true } } },
+    });
+
+    const byDay: Record<string, number> = {};
+    for (const h of history) {
+      const day = h.createdAt.toISOString().split('T')[0];
+      byDay[day] = (byDay[day] || 0) + 1;
+    }
+
+    return {
+      totalLogins: history.length,
+      byDay,
+      recentLogins: history.slice(0, 20),
+    };
+  }
 }
 
 export const reportsService = new ReportsService();
