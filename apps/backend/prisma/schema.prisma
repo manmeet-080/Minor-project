@@ -66,7 +66,13 @@ enum ComplaintCategory {
   INTERNET
   PEST_CONTROL
   SECURITY
+  MAINTENANCE
   OTHER
+}
+
+enum AttendanceMethod {
+  MANUAL
+  QR
 }
 
 enum FeeType {
@@ -167,6 +173,7 @@ model User {
   auditLogs          AuditLog[]
   approvedGatePasses GatePass[]    @relation("ApprovedGatePasses")
   loggedVisitors     Visitor[]     @relation("LoggedVisitors")
+  markedAttendances  Attendance[]  @relation("MarkedByUser")
 
   @@index([email])
   @@index([role])
@@ -198,6 +205,7 @@ model StudentProfile {
   messBookings MessBooking[]
   gatePasses  GatePass[]
   visitors    Visitor[]    @relation("VisitorStudent")
+  attendances Attendance[]
 
   @@index([rollNumber])
   @@index([status])
@@ -225,6 +233,7 @@ model Hostel {
   messBookings MessBooking[]
   gatePasses   GatePass[]
   visitors     Visitor[]
+  attendances  Attendance[]
 
   @@map("hostels")
 }
@@ -477,4 +486,35 @@ model AuditLog {
   @@index([entity, entityId])
   @@index([userId])
   @@map("audit_logs")
+}
+
+model Attendance {
+  id         String           @id @default(uuid())
+  studentId  String
+  hostelId   String
+  date       DateTime         @db.Date
+  checkIn    DateTime?
+  checkOut   DateTime?
+  status     AttendanceStatus @default(PRESENT)
+  method     AttendanceMethod @default(MANUAL)
+  markedById String
+  remarks    String?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  student  StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  hostel   Hostel         @relation(fields: [hostelId], references: [id])
+  markedBy User           @relation("MarkedByUser", fields: [markedById], references: [id])
+
+  @@unique([studentId, date])
+  @@index([hostelId, date])
+  @@index([studentId])
+  @@map("attendances")
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  ON_LEAVE
 }
