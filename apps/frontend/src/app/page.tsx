@@ -33,7 +33,7 @@ export default function Home() {
 
   return (
     <div className="flex h-screen items-center justify-center">
-      <div className="animate-pulse font-display text-2xl font-bold text-primary">SHMS</div>
+      <div className="animate-pulse font-display text-2xl font-bold text-primary">Campusphere</div>
     </div>
   );
 }

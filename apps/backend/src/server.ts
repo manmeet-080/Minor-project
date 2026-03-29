@@ -20,5 +20,5 @@ setupSockets(io);
 app.set('io', io);
 
 server.listen(env.PORT, () => {
-  console.log(`SHMS Backend running on port ${env.PORT}`);
+  console.log(`Campusphere Backend running on port ${env.PORT}`);
 });

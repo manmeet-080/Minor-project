@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "SHMS - Smart Hostel Management System",
-    "description": "Complete API collection for SHMS. Set the `baseUrl` variable to your server address.\n\n**Quick start:**\n1. Run the \"Login (Admin)\" request\n2. The access token is automatically saved to the `accessToken` variable\n3. All authenticated requests use this token via Bearer auth\n\n**Demo credentials:**\n- Admin: admin@shms.edu / admin123\n- Warden: warden@shms.edu / warden123\n- Staff: staff@shms.edu / staff123\n- Student: arun@student.edu / student123",
+    "name": "Campusphere - Smart Campus Management Platform",
+    "description": "Complete API collection for Campusphere. Set the `baseUrl` variable to your server address.\n\n**Quick start:**\n1. Run the \"Login (Admin)\" request\n2. The access token is automatically saved to the `accessToken` variable\n3. All authenticated requests use this token via Bearer auth\n\n**Demo credentials:**\n- Admin: admin@campusphere.edu / admin123\n- Warden: warden@campusphere.edu / warden123\n- Staff: staff@campusphere.edu / staff123\n- Student: arun@student.edu / student123",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -70,7 +70,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@shms.edu\",\n  \"password\": \"admin123\"\n}"
+              "raw": "{\n  \"email\": \"admin@campusphere.edu\",\n  \"password\": \"admin123\"\n}"
             }
           }
         },
@@ -134,7 +134,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"staff@shms.edu\",\n  \"password\": \"staff123\"\n}"
+              "raw": "{\n  \"email\": \"staff@campusphere.edu\",\n  \"password\": \"staff123\"\n}"
             }
           }
         },
@@ -163,7 +163,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"warden@shms.edu\",\n  \"password\": \"warden123\"\n}"
+              "raw": "{\n  \"email\": \"warden@campusphere.edu\",\n  \"password\": \"warden123\"\n}"
             }
           }
         },
@@ -253,7 +253,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@shms.edu\"\n}"
+              "raw": "{\n  \"email\": \"admin@campusphere.edu\"\n}"
             }
           }
         },

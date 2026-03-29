@@ -20,8 +20,8 @@ const bricolage = Bricolage_Grotesque({
 });
 
 export const metadata: Metadata = {
-  title: 'SHMS - Smart Hostel Management System',
-  description: 'Complete hostel management solution for modern institutions',
+  title: 'Campusphere - Smart Campus Management Platform',
+  description: 'Complete campus and hostel management solution for modern institutions',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

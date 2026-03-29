@@ -52,6 +52,6 @@ export const useAuthStore = create<AuthState>()(
       logout: () =>
         set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false }),
     }),
-    { name: 'shms-auth' },
+    { name: 'campusphere-auth' },
   ),
 );

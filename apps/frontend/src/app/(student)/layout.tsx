@@ -31,7 +31,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
 
   return (
     <div className="flex min-h-screen">
-      <AppSidebar items={navItems} title="SHMS" />
+      <AppSidebar items={navItems} title="Campusphere" />
 
       <div className="flex-1 flex flex-col overflow-y-auto">
         <Topbar />

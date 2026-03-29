@@ -1,13 +1,13 @@
 {
-  "name": "shms",
+  "name": "campusphere",
   "private": true,
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
     "lint": "turbo lint",
-    "db:migrate": "pnpm --filter @shms/backend prisma migrate dev",
-    "db:seed": "pnpm --filter @shms/backend prisma db seed",
-    "db:studio": "pnpm --filter @shms/backend prisma studio"
+    "db:migrate": "pnpm --filter @campusphere/backend prisma migrate dev",
+    "db:seed": "pnpm --filter @campusphere/backend prisma db seed",
+    "db:studio": "pnpm --filter @campusphere/backend prisma studio"
   },
   "devDependencies": {
     "turbo": "^2.4.0",

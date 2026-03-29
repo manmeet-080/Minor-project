@@ -39,7 +39,7 @@ function SidebarContent({ items, collapsed, title }: SidebarProps & { collapsed:
               <Zap className="h-4 w-4 text-sidebar-primary-foreground" />
             </div>
             <div>
-              <span className="font-display font-bold text-base leading-none">{title || 'SHMS'}</span>
+              <span className="font-display font-bold text-base leading-none">{title || 'Campusphere'}</span>
               <span className="block text-[10px] text-sidebar-foreground/50 leading-none mt-0.5">Management</span>
             </div>
           </motion.div>

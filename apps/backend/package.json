@@ -1,5 +1,5 @@
 {
-  "name": "@shms/backend",
+  "name": "@campusphere/backend",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@prisma/client": "^6.2.0",
-    "@shms/types": "workspace:*",
+    "@campusphere/types": "workspace:*",
     "bcryptjs": "^2.4.3",
     "bullmq": "^5.34.0",
     "cloudinary": "^2.5.0",

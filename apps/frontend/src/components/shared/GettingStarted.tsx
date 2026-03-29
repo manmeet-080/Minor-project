@@ -35,8 +35,8 @@ export function GettingStarted({ role }: { role: 'admin' | 'student' }) {
   const [dismissed, setDismissed] = useState(false);
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
 
-  const storageKey = `shms-onboarding-${role}`;
-  const dismissKey = `shms-onboarding-dismissed-${role}`;
+  const storageKey = `campusphere-onboarding-${role}`;
+  const dismissKey = `campusphere-onboarding-dismissed-${role}`;
 
   useEffect(() => {
     const saved = localStorage.getItem(storageKey);

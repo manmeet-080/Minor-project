@@ -77,8 +77,8 @@ export default function LoginPage() {
               <Zap className="h-5 w-5 text-sidebar-primary-foreground" />
             </div>
             <div>
-              <span className="font-display font-bold text-xl">SHMS</span>
-              <span className="block text-xs text-sidebar-foreground/60">Smart Hostel Management</span>
+              <span className="font-display font-bold text-xl">Campusphere</span>
+              <span className="block text-xs text-sidebar-foreground/60">Smart Campus Management</span>
             </div>
           </div>
 
@@ -119,7 +119,7 @@ export default function LoginPage() {
         </div>
 
         <p className="relative z-10 text-xs text-sidebar-foreground/40">
-          &copy; 2026 SHMS. Built for modern institutions.
+          &copy; 2026 Campusphere. Built for modern institutions.
         </p>
       </div>
 
@@ -136,7 +136,7 @@ export default function LoginPage() {
             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
               <Zap className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="font-display font-bold text-xl">SHMS</span>
+            <span className="font-display font-bold text-xl">Campusphere</span>
           </div>
 
           <div className="mb-8">
@@ -211,7 +211,7 @@ export default function LoginPage() {
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="rounded-lg bg-background p-2">
                 <p className="font-medium">Admin</p>
-                <p className="text-muted-foreground">admin@shms.edu</p>
+                <p className="text-muted-foreground">admin@campusphere.edu</p>
               </div>
               <div className="rounded-lg bg-background p-2">
                 <p className="font-medium">Student</p>
@@ -219,7 +219,7 @@ export default function LoginPage() {
               </div>
               <div className="rounded-lg bg-background p-2">
                 <p className="font-medium">Staff</p>
-                <p className="text-muted-foreground">staff@shms.edu</p>
+                <p className="text-muted-foreground">staff@campusphere.edu</p>
               </div>
               <div className="rounded-lg bg-background p-2 text-muted-foreground">
                 <p className="font-medium text-foreground">Password</p>

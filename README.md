@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🏠 SHMS — Smart Hostel Management System
+# 🏠 Campusphere — Smart Campus Management Platform
 
-A full-stack hostel management platform for educational institutions — handling everything from room allocation and fee tracking to gate passes, mess menus, and complaint resolution.
+A full-stack campus and hostel management platform for educational institutions — handling everything from room allocation and fee tracking to gate passes, mess menus, and complaint resolution.
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15.5-black?logo=next.js&logoColor=white)](https://nextjs.org/)
@@ -120,7 +120,7 @@ A full-stack hostel management platform for educational institutions — handlin
 ## Project Structure
 
 ```
-shms/
+campusphere/
 ├── apps/
 │   ├── backend/                # Express API
 │   │   ├── prisma/
@@ -176,15 +176,15 @@ shms/
 
 ### Prerequisites
 
-- **Node.js** ≥ 18
-- **pnpm** ≥ 10
+- **Node.js** >= 18
+- **pnpm** >= 10
 - **Docker** & Docker Compose
 
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/your-username/shms.git
-cd shms
+git clone https://github.com/your-username/campusphere.git
+cd campusphere
 pnpm install
 ```
 
@@ -207,9 +207,9 @@ cp apps/backend/.env.example apps/backend/.env
 Default `.env` values work out of the box with Docker Compose:
 
 ```env
-DATABASE_URL="postgresql://shms:shms_dev_password@localhost:5432/shms?schema=public"
+DATABASE_URL="postgresql://campusphere:campusphere_dev_password@localhost:5432/campusphere?schema=public"
 REDIS_URL="redis://localhost:6379"
-JWT_SECRET="shms-dev-jwt-secret-change-in-production"
+JWT_SECRET="campusphere-dev-jwt-secret-change-in-production"
 PORT=4000
 CORS_ORIGIN="http://localhost:3000"
 ```
@@ -241,9 +241,9 @@ pnpm dev
 
 | Role | Email | Password |
 |:--|:--|:--|
-| Admin | `admin@shms.edu` | `admin123` |
-| Warden | `warden@shms.edu` | `warden123` |
-| Staff | `staff@shms.edu` | `staff123` |
+| Admin | `admin@campusphere.edu` | `admin123` |
+| Warden | `warden@campusphere.edu` | `warden123` |
+| Staff | `staff@campusphere.edu` | `staff123` |
 
 ---
 

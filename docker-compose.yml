@@ -1,26 +1,26 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: shms-postgres
+    container_name: campusphere-postgres
     restart: unless-stopped
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: shms
-      POSTGRES_PASSWORD: shms_dev_password
-      POSTGRES_DB: shms
+      POSTGRES_USER: campusphere
+      POSTGRES_PASSWORD: campusphere_dev_password
+      POSTGRES_DB: campusphere
     volumes:
-      - shms_pgdata:/var/lib/postgresql/data
+      - campusphere_pgdata:/var/lib/postgresql/data
 
   redis:
     image: redis:7-alpine
-    container_name: shms-redis
+    container_name: campusphere-redis
     restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
-      - shms_redis:/data
+      - campusphere_redis:/data
 
 volumes:
-  shms_pgdata:
-  shms_redis:
+  campusphere_pgdata:
+  campusphere_redis:

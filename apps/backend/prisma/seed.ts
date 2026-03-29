@@ -21,7 +21,7 @@ async function main() {
   const adminPassword = await bcrypt.hash('admin123', 12);
   const admin = await prisma.user.create({
     data: {
-      email: 'admin@shms.edu',
+      email: 'admin@campusphere.edu',
       password: adminPassword,
       name: 'Dr. Rajesh Kumar',
       phone: '9876543210',
@@ -34,7 +34,7 @@ async function main() {
   const wardenPassword = await bcrypt.hash('warden123', 12);
   const warden = await prisma.user.create({
     data: {
-      email: 'warden@shms.edu',
+      email: 'warden@campusphere.edu',
       password: wardenPassword,
       name: 'Prof. Suresh Sharma',
       phone: '9876543211',
@@ -53,7 +53,7 @@ async function main() {
   const staffPassword = await bcrypt.hash('staff123', 12);
   const staff = await prisma.user.create({
     data: {
-      email: 'staff@shms.edu',
+      email: 'staff@campusphere.edu',
       password: staffPassword,
       name: 'Ramesh Patel',
       phone: '9876543212',
@@ -238,9 +238,9 @@ async function main() {
   }
 
   console.log('Seed completed!');
-  console.log('Admin: admin@shms.edu / admin123');
-  console.log('Warden: warden@shms.edu / warden123');
-  console.log('Staff: staff@shms.edu / staff123');
+  console.log('Admin: admin@campusphere.edu / admin123');
+  console.log('Warden: warden@campusphere.edu / warden123');
+  console.log('Staff: staff@campusphere.edu / staff123');
   console.log('Students: arun@student.edu / student123 (and others)');
 }
 
