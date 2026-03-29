@@ -443,7 +443,57 @@ async function main() {
   }
 
   // ═══════════════════════════════════════════
-  // FEE RECORDS (multiple types, statuses)
+  // COMPLAINT UPDATES (status change history)
+  // ═══════════════════════════════════════════
+  const allComplaints = await prisma.complaint.findMany({ select: { id: true, status: true, assignedToId: true, hostelId: true } });
+  for (const c of allComplaints) {
+    const staffId = c.assignedToId || (c.hostelId === hostelMale.id ? maleStaff[0].id : femaleStaff[0].id);
+    await prisma.complaintUpdate.create({
+      data: {
+        complaintId: c.id,
+        userId: staffId,
+        message: 'Complaint received and logged in the system.',
+        status: 'OPEN',
+        createdAt: randomDate(new Date('2026-03-10'), new Date('2026-03-20')),
+      },
+    });
+    if (['ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'].includes(c.status)) {
+      await prisma.complaintUpdate.create({
+        data: {
+          complaintId: c.id,
+          userId: staffId,
+          message: randomPick(['Assigned to maintenance team.', 'Looking into this issue.', 'Staff dispatched to check.', 'Will inspect during next round.']),
+          status: 'ASSIGNED',
+          createdAt: randomDate(new Date('2026-03-20'), new Date('2026-03-24')),
+        },
+      });
+    }
+    if (['IN_PROGRESS', 'RESOLVED', 'CLOSED'].includes(c.status)) {
+      await prisma.complaintUpdate.create({
+        data: {
+          complaintId: c.id,
+          userId: staffId,
+          message: randomPick(['Work in progress. Parts ordered.', 'Technician is working on it.', 'Partially fixed, completing tomorrow.', 'Under repair, 50% done.']),
+          status: 'IN_PROGRESS',
+          createdAt: randomDate(new Date('2026-03-24'), new Date('2026-03-26')),
+        },
+      });
+    }
+    if (['RESOLVED', 'CLOSED'].includes(c.status)) {
+      await prisma.complaintUpdate.create({
+        data: {
+          complaintId: c.id,
+          userId: staffId,
+          message: randomPick(['Issue has been fixed and verified.', 'Repair completed successfully.', 'Replaced the faulty part. Working fine now.', 'Problem resolved. Please verify.']),
+          status: 'RESOLVED',
+          createdAt: randomDate(new Date('2026-03-26'), new Date('2026-03-28')),
+        },
+      });
+    }
+  }
+
+  // ═══════════════════════════════════════════
+  // FEE RECORDS (6 months of billing for revenue trend)
   // ═══════════════════════════════════════════
   const feeTypes: Array<{ type: string; amount: number }> = [
     { type: 'HOSTEL_FEE', amount: 45000 },
@@ -452,26 +502,58 @@ async function main() {
     { type: 'MAINTENANCE_FEE', amount: 3000 },
   ];
 
-  for (const sp of studentProfiles) {
-    for (const ft of feeTypes) {
-      const isPaid = Math.random() > 0.35;
-      const isOverdue = !isPaid && Math.random() > 0.5;
-      const isPartial = !isPaid && !isOverdue && Math.random() > 0.5;
+  // Generate fees for the last 6 months so revenue trend chart has real data
+  const feeMonths = [
+    { month: 10, year: 2025, dueDay: 15 }, // Oct 2025
+    { month: 11, year: 2025, dueDay: 15 }, // Nov 2025
+    { month: 12, year: 2025, dueDay: 15 }, // Dec 2025
+    { month: 1, year: 2026, dueDay: 15 },  // Jan 2026
+    { month: 2, year: 2026, dueDay: 15 },  // Feb 2026
+    { month: 3, year: 2026, dueDay: 15 },  // Mar 2026 (current)
+    { month: 4, year: 2026, dueDay: 15 },  // Apr 2026 (upcoming)
+  ];
 
-      await prisma.feeRecord.create({
-        data: {
-          studentId: sp.id,
-          hostelId: sp.hostelId,
-          type: ft.type as any,
-          amount: ft.amount,
-          dueDate: new Date('2026-04-15'),
-          status: isPaid ? 'PAID' : isOverdue ? 'OVERDUE' : isPartial ? 'PARTIALLY_PAID' : 'PENDING',
-          paidAmount: isPaid ? ft.amount : isPartial ? Math.floor(ft.amount * 0.5) : 0,
-          paidDate: isPaid ? randomDate(new Date('2026-03-01'), new Date('2026-03-28')) : undefined,
-          paymentMethod: isPaid ? randomPick(['UPI', 'BANK_TRANSFER', 'CARD'] as const) as any : undefined,
-          transactionId: isPaid ? `TXN${Date.now().toString(36).toUpperCase()}${Math.random().toString(36).substring(2, 6).toUpperCase()}` : undefined,
-        },
-      });
+  for (const fm of feeMonths) {
+    const dueDate = new Date(fm.year, fm.month - 1, fm.dueDay);
+    const isPastMonth = dueDate < new Date();
+    // Pick a subset of students for each month (all for current, random for past)
+    const monthStudents = isPastMonth
+      ? studentProfiles.filter(() => Math.random() > 0.3) // ~70% of students per past month
+      : studentProfiles; // All students for current/upcoming
+
+    for (const sp of monthStudents) {
+      // Pick 1-2 fee types per month per student
+      const monthFees = isPastMonth
+        ? feeTypes.filter(() => Math.random() > 0.5).slice(0, 2)
+        : feeTypes; // All fee types for current month
+
+      for (const ft of monthFees) {
+        const isPaid = isPastMonth ? Math.random() > 0.15 : Math.random() > 0.4;
+        const isOverdue = !isPaid && isPastMonth;
+        const isPartial = !isPaid && !isOverdue && Math.random() > 0.6;
+
+        const createdAt = new Date(fm.year, fm.month - 1, 1 + Math.floor(Math.random() * 10));
+        const paidDate = isPaid ? randomDate(
+          new Date(fm.year, fm.month - 1, 5),
+          new Date(fm.year, fm.month - 1, 28),
+        ) : undefined;
+
+        await prisma.feeRecord.create({
+          data: {
+            studentId: sp.id,
+            hostelId: sp.hostelId,
+            type: ft.type as any,
+            amount: ft.amount,
+            dueDate,
+            status: isPaid ? 'PAID' : isOverdue ? 'OVERDUE' : isPartial ? 'PARTIALLY_PAID' : 'PENDING',
+            paidAmount: isPaid ? ft.amount : isPartial ? Math.floor(ft.amount * 0.5) : 0,
+            paidDate,
+            paymentMethod: isPaid ? randomPick(['UPI', 'BANK_TRANSFER', 'CARD'] as const) as any : undefined,
+            transactionId: isPaid ? `TXN${Date.now().toString(36).toUpperCase()}${Math.random().toString(36).substring(2, 6).toUpperCase()}` : undefined,
+            createdAt,
+          },
+        });
+      }
     }
   }
 
@@ -528,24 +610,35 @@ async function main() {
   }
 
   // ═══════════════════════════════════════════
-  // MESS BOOKINGS (last 7 days for some students)
+  // MESS BOOKINGS (full current month + next 3 days)
   // ═══════════════════════════════════════════
   const meals = ['BREAKFAST', 'LUNCH', 'DINNER'] as const;
-  for (let dayOffset = -7; dayOffset <= 3; dayOffset++) {
+  const mealFeedbacks = [
+    'Good food today', 'Dal was too salty', 'Loved the biryani!', 'Chapati was hard',
+    'Excellent paneer dish', 'Rice was undercooked', 'Best sambar this month!',
+    'Too much oil in sabzi', 'Curd was fresh and good', 'Dosa was crispy and perfect',
+    'Need more variety in breakfast', 'Kheer was delicious!', 'Roti quality has improved',
+  ];
+
+  // Seed from March 1 to March 29 (past) + March 30 to April 2 (future)
+  for (let dayOffset = -28; dayOffset <= 4; dayOffset++) {
     const date = new Date();
     date.setDate(date.getDate() + dayOffset);
     date.setHours(0, 0, 0, 0);
+    if (date.getDay() === 0) continue; // Skip Sundays
 
-    for (const sp of studentProfiles.slice(0, 20)) {
+    // More students book meals for recent days
+    const studentSlice = dayOffset > -7 ? studentProfiles.slice(0, 30) : studentProfiles.slice(0, 15);
+    for (const sp of studentSlice) {
       for (const meal of meals) {
-        if (Math.random() > 0.25) {
+        if (Math.random() > 0.2) { // 80% booking rate
           const pastDay = dayOffset < 0;
           await prisma.messBooking.create({
             data: {
               studentId: sp.id, hostelId: sp.hostelId, date, mealType: meal,
               isBooked: true,
-              rating: pastDay && Math.random() > 0.6 ? Math.floor(Math.random() * 3) + 3 : undefined,
-              feedback: pastDay && Math.random() > 0.8 ? randomPick(['Good food today', 'Dal was too salty', 'Loved the biryani!', 'Chapati was hard', 'Excellent paneer dish']) : undefined,
+              rating: pastDay && Math.random() > 0.5 ? Math.floor(Math.random() * 3) + 3 : undefined,
+              feedback: pastDay && Math.random() > 0.75 ? randomPick(mealFeedbacks) : undefined,
             },
           });
         }
@@ -614,27 +707,51 @@ async function main() {
   }
 
   // ═══════════════════════════════════════════
-  // ATTENDANCE (last 5 days)
+  // ATTENDANCE (full current month + previous month for semester data)
   // ═══════════════════════════════════════════
-  for (let dayOffset = -5; dayOffset <= -1; dayOffset++) {
-    const date = new Date();
-    date.setDate(date.getDate() + dayOffset);
-    date.setHours(0, 0, 0, 0);
+  const attendanceStartDate = new Date();
+  attendanceStartDate.setMonth(attendanceStartDate.getMonth() - 1, 1); // Start of previous month
+  attendanceStartDate.setHours(0, 0, 0, 0);
+  const attendanceEndDate = new Date();
+  attendanceEndDate.setDate(attendanceEndDate.getDate() - 1); // Yesterday
+  attendanceEndDate.setHours(0, 0, 0, 0);
 
-    for (const sp of studentProfiles.slice(0, 30)) {
-      const staffForHostel = sp.hostelId === hostelMale.id ? maleStaff : femaleStaff;
-      const status = Math.random() > 0.15 ? 'PRESENT' : Math.random() > 0.5 ? 'LATE' : 'ABSENT';
-      const checkInHour = status === 'LATE' ? 23 + Math.floor(Math.random() * 2) : 21 + Math.floor(Math.random() * 2);
-
-      await prisma.attendance.create({
-        data: {
-          studentId: sp.id, hostelId: sp.hostelId, date,
-          status: status as any, method: 'MANUAL',
-          markedById: randomPick(staffForHostel).id,
-          checkIn: status !== 'ABSENT' ? new Date(date.getFullYear(), date.getMonth(), date.getDate(), checkInHour, Math.floor(Math.random() * 60)) : undefined,
-        },
+  const attendanceDate = new Date(attendanceStartDate);
+  while (attendanceDate <= attendanceEndDate) {
+    if (attendanceDate.getDay() !== 0) { // Skip Sundays
+      // Mark attendance for all approved students
+      const approvedProfiles = studentProfiles.filter((_, i) => {
+        // Skip last 2 male and last 2 female (they are PENDING)
+        const isMale = i < maleStudents.length;
+        const indexInGroup = isMale ? i : i - maleStudents.length;
+        const groupLen = isMale ? maleStudents.length : femaleStudents.length;
+        return indexInGroup < groupLen - 2;
       });
+
+      for (const sp of approvedProfiles) {
+        const staffForHostel = sp.hostelId === hostelMale.id ? maleStaff : femaleStaff;
+        // Realistic distribution: 82% present, 8% late, 7% absent, 3% on leave
+        const rand = Math.random();
+        const status = rand > 0.18 ? 'PRESENT' : rand > 0.10 ? 'LATE' : rand > 0.03 ? 'ABSENT' : 'ON_LEAVE';
+        const checkInHour = status === 'LATE' ? 22 + Math.floor(Math.random() * 2) : 20 + Math.floor(Math.random() * 2);
+
+        await prisma.attendance.create({
+          data: {
+            studentId: sp.id,
+            hostelId: sp.hostelId,
+            date: new Date(attendanceDate),
+            status: status as any,
+            method: 'MANUAL',
+            markedById: randomPick(staffForHostel).id,
+            checkIn: status !== 'ABSENT' && status !== 'ON_LEAVE'
+              ? new Date(attendanceDate.getFullYear(), attendanceDate.getMonth(), attendanceDate.getDate(), checkInHour, Math.floor(Math.random() * 60))
+              : undefined,
+            remarks: status === 'ON_LEAVE' ? randomPick(['Medical leave', 'Family function', 'University event', 'Exam preparation leave']) : undefined,
+          },
+        });
+      }
     }
+    attendanceDate.setDate(attendanceDate.getDate() + 1);
   }
 
   // ═══════════════════════════════════════════
@@ -657,6 +774,44 @@ async function main() {
         },
       });
     }
+  }
+
+  // ═══════════════════════════════════════════
+  // AUDIT LOGS (admin activity trail)
+  // ═══════════════════════════════════════════
+  const auditActions = [
+    { action: 'student.approve', entity: 'StudentProfile', message: 'Approved student application' },
+    { action: 'student.reject', entity: 'StudentProfile', message: 'Rejected student application' },
+    { action: 'room.allocate', entity: 'Bed', message: 'Allocated bed to student' },
+    { action: 'fee.create', entity: 'FeeRecord', message: 'Created fee record' },
+    { action: 'fee.payment', entity: 'FeeRecord', message: 'Recorded fee payment' },
+    { action: 'complaint.assign', entity: 'Complaint', message: 'Assigned complaint to staff' },
+    { action: 'complaint.resolve', entity: 'Complaint', message: 'Resolved complaint' },
+    { action: 'gatepass.approve', entity: 'GatePass', message: 'Approved gate pass request' },
+    { action: 'gatepass.reject', entity: 'GatePass', message: 'Rejected gate pass request' },
+    { action: 'mess.menu.update', entity: 'MessMenu', message: 'Updated mess menu for the week' },
+    { action: 'event.create', entity: 'Event', message: 'Created new hostel event' },
+    { action: 'notification.broadcast', entity: 'Notification', message: 'Sent broadcast announcement' },
+    { action: 'hostel.settings.update', entity: 'Hostel', message: 'Updated hostel settings' },
+    { action: 'user.create', entity: 'User', message: 'Created new staff member' },
+    { action: 'room.maintenance', entity: 'Room', message: 'Marked room for maintenance' },
+  ];
+
+  const adminIds = [superAdmin.id, adminMale.id, adminFemale.id, wardenMale.id, wardenFemale.id];
+  for (let i = 0; i < 30; i++) {
+    const audit = randomPick(auditActions);
+    await prisma.auditLog.create({
+      data: {
+        userId: randomPick(adminIds),
+        action: audit.action,
+        entity: audit.entity,
+        entityId: `seed-${i}-${Date.now().toString(36)}`,
+        oldValues: null,
+        newValues: { message: audit.message },
+        ipAddress: `192.168.${Math.floor(Math.random() * 10)}.${Math.floor(Math.random() * 255)}`,
+        createdAt: randomDate(new Date('2026-03-10'), new Date('2026-03-29')),
+      },
+    });
   }
 
   console.log('\n✅ Seed completed successfully!\n');
