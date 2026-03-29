@@ -33,7 +33,13 @@ router.post('/login', validate(loginSchema), ctrl.login);
 router.post('/refresh', validate(refreshSchema), ctrl.refresh);
 router.post('/logout', authenticate, ctrl.logout);
 router.get('/me', authenticate, ctrl.getMe);
-router.patch('/me', authenticate, ctrl.updateProfile);
+const updateProfileSchema = z.object({
+  name: z.string().min(2).optional(),
+  phone: z.string().min(10).optional(),
+  avatarUrl: z.string().url().optional(),
+});
+
+router.patch('/me', authenticate, validate(updateProfileSchema), ctrl.updateProfile);
 router.get('/sessions', authenticate, ctrl.getSessions);
 router.post('/forgot-password', validate(forgotSchema), ctrl.forgotPassword);
 router.post('/reset-password', validate(resetSchema), ctrl.resetPassword);
