@@ -1,6 +1,7 @@
 import { prisma } from '../../config/database.js';
 import { AppError } from '../../shared/middleware/errorHandler.js';
 import { Prisma, ComplaintStatus } from '@prisma/client';
+import { events } from '../../sockets/events.js';
 
 export class ComplaintsService {
   async list(query: {
@@ -62,7 +63,7 @@ export class ComplaintsService {
     title: string; description: string; category: string; priority?: string;
     images?: string[]; studentId: string; hostelId: string; roomId?: string;
   }) {
-    return prisma.complaint.create({
+    const complaint = await prisma.complaint.create({
       data: {
         title: data.title,
         description: data.description,
@@ -75,6 +76,9 @@ export class ComplaintsService {
       },
       include: { student: { include: { user: { select: { name: true } } } } },
     });
+
+    events.newComplaint(data.hostelId, { id: complaint.id, title: data.title, category: data.category, priority: (data.priority as string) || 'MEDIUM' });
+    return complaint;
   }
 
   async assign(id: string, assignedToId: string, userId: string) {
@@ -94,11 +98,19 @@ export class ComplaintsService {
     const data: any = { status };
     if (status === 'RESOLVED') data.resolvedAt = new Date();
 
-    const complaint = await prisma.complaint.update({ where: { id }, data });
+    const complaint = await prisma.complaint.update({
+      where: { id },
+      data,
+      include: { student: { include: { user: { select: { id: true } } } } },
+    });
 
     await prisma.complaintUpdate.create({
       data: { complaintId: id, userId, message, status },
     });
+
+    if (complaint.student?.user?.id) {
+      events.complaintStatusChanged(complaint.student.user.id, complaint.hostelId, { id, title: complaint.title, status });
+    }
 
     return this.getById(id);
   }
