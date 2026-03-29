@@ -17,6 +17,7 @@ import notificationsRouter from './modules/notifications/notifications.router.js
 import reportsRouter from './modules/reports/reports.router.js';
 import usersRouter from './modules/users/users.router.js';
 import hostelsRouter from './modules/hostels/hostels.router.js';
+import auditLogsRouter from './modules/audit-logs/audit-logs.router.js';
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.use('/api/v1/notifications', notificationsRouter);
 app.use('/api/v1/reports', reportsRouter);
 app.use('/api/v1/users', usersRouter);
 app.use('/api/v1/hostels', hostelsRouter);
+app.use('/api/v1/audit-logs', auditLogsRouter);
 
 app.use(errorHandler);
 
