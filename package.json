@@ -1,0 +1,28 @@
+{
+  "name": "campusphere",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "setup": "bash setup.sh",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "db:migrate": "cd apps/backend && npx prisma migrate dev",
+    "db:migrate:deploy": "cd apps/backend && npx prisma migrate deploy",
+    "db:seed": "cd apps/backend && npx prisma db seed",
+    "db:studio": "cd apps/backend && npx prisma studio",
+    "db:reset": "cd apps/backend && npx prisma migrate reset --force",
+    "typecheck": "turbo typecheck",
+    "typecheck:backend": "cd apps/backend && npx tsc --noEmit",
+    "typecheck:frontend": "cd apps/frontend && npx tsc --noEmit"
+  },
+  "devDependencies": {
+    "turbo": "^2.4.0",
+    "typescript": "^5.7.0"
+  },
+  "packageManager": "pnpm@10.32.1",
+  "pnpm": {
+    "onlyBuiltDependencies": ["@prisma/client", "@prisma/engines", "prisma", "esbuild", "msgpackr-extract"]
+  }
+}

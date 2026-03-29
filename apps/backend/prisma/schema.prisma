@@ -1,0 +1,577 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  WARDEN
+  STAFF
+  STUDENT
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum RoomStatus {
+  AVAILABLE
+  OCCUPIED
+  PARTIALLY_OCCUPIED
+  UNDER_MAINTENANCE
+}
+
+enum RoomType {
+  SINGLE
+  DOUBLE
+  TRIPLE
+  DORMITORY
+}
+
+enum BedStatus {
+  VACANT
+  OCCUPIED
+  RESERVED
+  MAINTENANCE
+}
+
+enum ComplaintStatus {
+  OPEN
+  ASSIGNED
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+  REOPENED
+}
+
+enum ComplaintPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum ComplaintCategory {
+  ELECTRICAL
+  PLUMBING
+  FURNITURE
+  CLEANING
+  INTERNET
+  PEST_CONTROL
+  SECURITY
+  MAINTENANCE
+  OTHER
+}
+
+enum AttendanceMethod {
+  MANUAL
+  QR
+}
+
+enum FeeType {
+  HOSTEL_FEE
+  MESS_FEE
+  MAINTENANCE_FEE
+  SECURITY_DEPOSIT
+  FINE
+  OTHER
+}
+
+enum FeeStatus {
+  PENDING
+  PAID
+  OVERDUE
+  WAIVED
+  PARTIALLY_PAID
+}
+
+enum PaymentMethod {
+  CASH
+  UPI
+  BANK_TRANSFER
+  CARD
+  CHEQUE
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  SNACKS
+  DINNER
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum GatePassStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CHECKED_OUT
+  RETURNED
+  EXPIRED
+}
+
+enum GatePassType {
+  LOCAL
+  HOME
+  EMERGENCY
+  MEDICAL
+}
+
+enum NotificationType {
+  INFO
+  WARNING
+  SUCCESS
+  ERROR
+  ANNOUNCEMENT
+}
+
+enum StudentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CHECKED_OUT
+  GRADUATED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  phone     String?
+  role      Role     @default(STUDENT)
+  avatarUrl String?
+  isActive  Boolean  @default(true)
+  hostelId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  hostel          Hostel?          @relation("HostelUsers", fields: [hostelId], references: [id])
+  studentProfile  StudentProfile?
+  wardenOfHostel  Hostel?          @relation("HostelWarden")
+  assignedComplaints Complaint[]   @relation("AssignedComplaints")
+  complaintUpdates   ComplaintUpdate[]
+  notifications      Notification[]
+  loginHistory       LoginHistory[]
+  auditLogs          AuditLog[]
+  approvedGatePasses GatePass[]    @relation("ApprovedGatePasses")
+  loggedVisitors     Visitor[]     @relation("LoggedVisitors")
+  markedAttendances  Attendance[]  @relation("MarkedByUser")
+  createdEvents      Event[]       @relation("CreatedEvents")
+  eventRsvps         EventRsvp[]
+
+  @@index([email])
+  @@index([role])
+  @@index([hostelId])
+  @@map("users")
+}
+
+model StudentProfile {
+  id               String        @id @default(uuid())
+  userId           String        @unique
+  rollNumber       String        @unique
+  department       String
+  year             Int
+  gender           Gender
+  parentName       String
+  parentPhone      String
+  permanentAddress String
+  status           StudentStatus @default(PENDING)
+  bedId            String?       @unique
+  joinDate         DateTime?
+  checkoutDate     DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bed         Bed?         @relation(fields: [bedId], references: [id])
+  complaints  Complaint[]
+  feeRecords  FeeRecord[]
+  messBookings MessBooking[]
+  gatePasses  GatePass[]
+  visitors    Visitor[]    @relation("VisitorStudent")
+  attendances Attendance[]
+
+  @@index([rollNumber])
+  @@index([status])
+  @@map("student_profiles")
+}
+
+model Hostel {
+  id          String   @id @default(uuid())
+  name        String
+  code        String   @unique
+  address     String
+  totalBlocks Int      @default(0)
+  gender      Gender
+  wardenId    String?  @unique
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  warden       User?        @relation("HostelWarden", fields: [wardenId], references: [id])
+  users        User[]       @relation("HostelUsers")
+  blocks       Block[]
+  complaints   Complaint[]
+  feeRecords   FeeRecord[]
+  messMenus    MessMenu[]
+  messBookings MessBooking[]
+  gatePasses   GatePass[]
+  visitors     Visitor[]
+  attendances  Attendance[]
+  events       Event[]
+
+  @@map("hostels")
+}
+
+model Block {
+  id        String   @id @default(uuid())
+  name      String
+  hostelId  String
+  floors    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  hostel Hostel @relation(fields: [hostelId], references: [id], onDelete: Cascade)
+  rooms  Room[]
+
+  @@unique([hostelId, name])
+  @@map("blocks")
+}
+
+model Room {
+  id         String     @id @default(uuid())
+  roomNumber String
+  blockId    String
+  floor      Int
+  type       RoomType   @default(DOUBLE)
+  capacity   Int
+  status     RoomStatus @default(AVAILABLE)
+  amenities  String[]   @default([])
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  block      Block       @relation(fields: [blockId], references: [id], onDelete: Cascade)
+  beds       Bed[]
+  complaints Complaint[]
+
+  @@unique([blockId, roomNumber])
+  @@index([status])
+  @@map("rooms")
+}
+
+model Bed {
+  id        String    @id @default(uuid())
+  bedNumber String
+  roomId    String
+  status    BedStatus @default(VACANT)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  room    Room            @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  student StudentProfile?
+
+  @@unique([roomId, bedNumber])
+  @@map("beds")
+}
+
+model Complaint {
+  id           String            @id @default(uuid())
+  title        String
+  description  String
+  category     ComplaintCategory
+  priority     ComplaintPriority @default(MEDIUM)
+  status       ComplaintStatus   @default(OPEN)
+  images       String[]          @default([])
+  studentId    String
+  hostelId     String
+  roomId       String?
+  assignedToId String?
+  resolvedAt   DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  deletedAt    DateTime?
+
+  student    StudentProfile    @relation(fields: [studentId], references: [id])
+  hostel     Hostel            @relation(fields: [hostelId], references: [id])
+  room       Room?             @relation(fields: [roomId], references: [id])
+  assignedTo User?             @relation("AssignedComplaints", fields: [assignedToId], references: [id])
+  updates    ComplaintUpdate[]
+
+  @@index([status])
+  @@index([hostelId])
+  @@index([studentId])
+  @@map("complaints")
+}
+
+model ComplaintUpdate {
+  id          String          @id @default(uuid())
+  complaintId String
+  userId      String
+  message     String
+  status      ComplaintStatus
+  createdAt   DateTime        @default(now())
+
+  complaint Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@map("complaint_updates")
+}
+
+model FeeRecord {
+  id            String         @id @default(uuid())
+  studentId     String
+  hostelId      String
+  type          FeeType
+  amount        Decimal        @db.Decimal(10, 2)
+  dueDate       DateTime
+  status        FeeStatus      @default(PENDING)
+  paidAmount    Decimal        @default(0) @db.Decimal(10, 2)
+  paidDate      DateTime?
+  paymentMethod PaymentMethod?
+  transactionId String?
+  receiptUrl    String?
+  remarks       String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  student StudentProfile @relation(fields: [studentId], references: [id])
+  hostel  Hostel         @relation(fields: [hostelId], references: [id])
+
+  @@index([studentId])
+  @@index([status])
+  @@index([hostelId])
+  @@map("fee_records")
+}
+
+model MessMenu {
+  id        String    @id @default(uuid())
+  hostelId  String
+  dayOfWeek DayOfWeek
+  mealType  MealType
+  items     String[]  @default([])
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  hostel Hostel @relation(fields: [hostelId], references: [id])
+
+  @@unique([hostelId, dayOfWeek, mealType])
+  @@map("mess_menus")
+}
+
+model MessBooking {
+  id        String   @id @default(uuid())
+  studentId String
+  hostelId  String
+  date      DateTime @db.Date
+  mealType  MealType
+  isBooked  Boolean  @default(true)
+  feedback  String?
+  rating    Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  student StudentProfile @relation(fields: [studentId], references: [id])
+  hostel  Hostel         @relation(fields: [hostelId], references: [id])
+
+  @@unique([studentId, date, mealType])
+  @@index([hostelId, date])
+  @@map("mess_bookings")
+}
+
+model GatePass {
+  id             String         @id @default(uuid())
+  studentId      String
+  hostelId       String
+  type           GatePassType
+  reason         String
+  destination    String
+  exitDate       DateTime
+  expectedReturn DateTime
+  actualReturn   DateTime?
+  status         GatePassStatus @default(PENDING)
+  approvedById   String?
+  remarks        String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  student    StudentProfile @relation(fields: [studentId], references: [id])
+  hostel     Hostel         @relation(fields: [hostelId], references: [id])
+  approvedBy User?          @relation("ApprovedGatePasses", fields: [approvedById], references: [id])
+
+  @@index([studentId])
+  @@index([status])
+  @@index([hostelId])
+  @@map("gate_passes")
+}
+
+model Visitor {
+  id           String   @id @default(uuid())
+  hostelId     String
+  visitorName  String
+  visitorPhone String
+  purpose      String
+  studentId    String?
+  entryTime    DateTime @default(now())
+  exitTime     DateTime?
+  idProof      String
+  loggedById   String
+  createdAt    DateTime @default(now())
+
+  hostel   Hostel          @relation(fields: [hostelId], references: [id])
+  student  StudentProfile? @relation("VisitorStudent", fields: [studentId], references: [id])
+  loggedBy User            @relation("LoggedVisitors", fields: [loggedById], references: [id])
+
+  @@index([hostelId])
+  @@map("visitors")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  type      NotificationType @default(INFO)
+  isRead    Boolean          @default(false)
+  link      String?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+model LoginHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  ipAddress String
+  userAgent String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("login_history")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  action    String
+  entity    String
+  entityId  String
+  oldValues Json?
+  newValues Json?
+  ipAddress String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([entity, entityId])
+  @@index([userId])
+  @@map("audit_logs")
+}
+
+model Attendance {
+  id         String           @id @default(uuid())
+  studentId  String
+  hostelId   String
+  date       DateTime         @db.Date
+  checkIn    DateTime?
+  checkOut   DateTime?
+  status     AttendanceStatus @default(PRESENT)
+  method     AttendanceMethod @default(MANUAL)
+  markedById String
+  remarks    String?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  student  StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  hostel   Hostel         @relation(fields: [hostelId], references: [id])
+  markedBy User           @relation("MarkedByUser", fields: [markedById], references: [id])
+
+  @@unique([studentId, date])
+  @@index([hostelId, date])
+  @@index([studentId])
+  @@map("attendances")
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  ON_LEAVE
+}
+
+// Event Management
+model Event {
+  id          String        @id @default(uuid())
+  title       String
+  description String
+  venue       String
+  date        DateTime
+  endDate     DateTime?
+  capacity    Int?
+  imageUrl    String?
+  category    EventCategory @default(GENERAL)
+  hostelId    String
+  createdById String
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  hostel    Hostel      @relation(fields: [hostelId], references: [id])
+  createdBy User        @relation("CreatedEvents", fields: [createdById], references: [id])
+  rsvps     EventRsvp[]
+
+  @@index([hostelId, date])
+  @@map("events")
+}
+
+model EventRsvp {
+  id        String     @id @default(uuid())
+  eventId   String
+  userId    String
+  status    RsvpStatus @default(GOING)
+  createdAt DateTime   @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@map("event_rsvps")
+}
+
+enum EventCategory {
+  GENERAL
+  CULTURAL
+  SPORTS
+  ACADEMIC
+  FESTIVAL
+  MEETING
+}
+
+enum RsvpStatus {
+  GOING
+  MAYBE
+  NOT_GOING
+}

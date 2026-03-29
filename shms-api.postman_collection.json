@@ -1,0 +1,1077 @@
+{
+  "info": {
+    "name": "Campusphere - Smart Campus Management Platform",
+    "description": "Complete API collection for Campusphere. Set the `baseUrl` variable to your server address.\n\n**Quick start:**\n1. Run the \"Login (Admin)\" request\n2. The access token is automatically saved to the `accessToken` variable\n3. All authenticated requests use this token via Bearer auth\n\n**Demo credentials:**\n- Admin: admin@campusphere.edu / admin123\n- Warden: warden@campusphere.edu / warden123\n- Staff: staff@campusphere.edu / staff123\n- Student: arun@student.edu / student123",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000/api/v1" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" },
+    { "key": "hostelId", "value": "" },
+    { "key": "studentProfileId", "value": "" },
+    { "key": "userId", "value": "" },
+    { "key": "complaintId", "value": "" },
+    { "key": "feeId", "value": "" },
+    { "key": "gatePassId", "value": "" },
+    { "key": "visitorId", "value": "" },
+    { "key": "roomId", "value": "" },
+    { "key": "bedId", "value": "" },
+    { "key": "blockId", "value": "" },
+    { "key": "bookingId", "value": "" },
+    { "key": "notificationId", "value": "" },
+    { "key": "staffUserId", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/../health", "host": ["{{baseUrl}}"], "path": ["..", "health"] },
+            "auth": { "type": "noauth" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "description": "Authentication & profile management. Login requests auto-save tokens to collection variables.",
+      "item": [
+        {
+          "name": "Login (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const data = pm.response.json().data;",
+                  "  pm.collectionVariables.set('accessToken', data.accessToken);",
+                  "  pm.collectionVariables.set('refreshToken', data.refreshToken);",
+                  "  pm.collectionVariables.set('userId', data.user.id);",
+                  "  pm.collectionVariables.set('hostelId', data.user.hostelId || '');",
+                  "  pm.test('Login successful', () => pm.expect(pm.response.json().success).to.be.true);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "auth": { "type": "noauth" },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@campusphere.edu\",\n  \"password\": \"admin123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login (Student)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const data = pm.response.json().data;",
+                  "  pm.collectionVariables.set('accessToken', data.accessToken);",
+                  "  pm.collectionVariables.set('refreshToken', data.refreshToken);",
+                  "  pm.collectionVariables.set('userId', data.user.id);",
+                  "  pm.collectionVariables.set('hostelId', data.user.hostelId || '');",
+                  "  if (data.user.studentProfile) {",
+                  "    pm.collectionVariables.set('studentProfileId', data.user.studentProfile.id);",
+                  "  }",
+                  "  pm.test('Login successful', () => pm.expect(pm.response.json().success).to.be.true);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "auth": { "type": "noauth" },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"arun@student.edu\",\n  \"password\": \"student123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login (Staff)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const data = pm.response.json().data;",
+                  "  pm.collectionVariables.set('accessToken', data.accessToken);",
+                  "  pm.collectionVariables.set('refreshToken', data.refreshToken);",
+                  "  pm.collectionVariables.set('userId', data.user.id);",
+                  "  pm.collectionVariables.set('staffUserId', data.user.id);",
+                  "  pm.collectionVariables.set('hostelId', data.user.hostelId || '');",
+                  "  pm.test('Login successful', () => pm.expect(pm.response.json().success).to.be.true);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "auth": { "type": "noauth" },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"staff@campusphere.edu\",\n  \"password\": \"staff123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login (Warden)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const data = pm.response.json().data;",
+                  "  pm.collectionVariables.set('accessToken', data.accessToken);",
+                  "  pm.collectionVariables.set('refreshToken', data.refreshToken);",
+                  "  pm.collectionVariables.set('userId', data.user.id);",
+                  "  pm.collectionVariables.set('hostelId', data.user.hostelId || '');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "auth": { "type": "noauth" },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"warden@campusphere.edu\",\n  \"password\": \"warden123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const data = pm.response.json().data;",
+                  "  pm.collectionVariables.set('accessToken', data.accessToken);",
+                  "  pm.collectionVariables.set('refreshToken', data.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/refresh",
+            "auth": { "type": "noauth" },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/logout",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Me (Profile)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/auth/me"
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/auth/me",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Name\",\n  \"phone\": \"9999999999\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/change-password",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"admin123\",\n  \"newPassword\": \"newpassword123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Sessions",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/auth/sessions"
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/forgot-password",
+            "auth": { "type": "noauth" },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@campusphere.edu\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/reset-password",
+            "auth": { "type": "noauth" },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"PASTE_RESET_TOKEN_HERE\",\n  \"password\": \"newpassword123\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "description": "User listing (admin only). Used to fetch staff members for complaint assignment.",
+      "item": [
+        {
+          "name": "List Users (by role & hostel)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/users?hostelId={{hostelId}}&role=STAFF",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"],
+              "query": [
+                { "key": "hostelId", "value": "{{hostelId}}" },
+                { "key": "role", "value": "STAFF", "description": "ADMIN | WARDEN | STAFF | STUDENT" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Hostels",
+      "description": "Hostel configuration.",
+      "item": [
+        {
+          "name": "Get Hostel Details",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/hostels/{{hostelId}}"
+          }
+        },
+        {
+          "name": "Update Hostel",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/hostels/{{hostelId}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nehru Hostel Updated\",\n  \"address\": \"New Address\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Students",
+      "description": "Student registration, approval, and management.",
+      "item": [
+        {
+          "name": "Apply (Register New Student)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const data = pm.response.json().data;",
+                  "  if (data.studentProfile) pm.collectionVariables.set('studentProfileId', data.studentProfile.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/students/apply",
+            "auth": { "type": "noauth" },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newstudent@student.edu\",\n  \"password\": \"student123\",\n  \"name\": \"New Student\",\n  \"phone\": \"9876543299\",\n  \"rollNumber\": \"CS2025001\",\n  \"department\": \"CS\",\n  \"year\": 1,\n  \"gender\": \"MALE\",\n  \"parentName\": \"Parent Name\",\n  \"parentPhone\": \"9876543200\",\n  \"permanentAddress\": \"123 Main Street, City, State\",\n  \"hostelId\": \"{{hostelId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List Students",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/students?page=1&limit=20&status=APPROVED",
+              "host": ["{{baseUrl}}"],
+              "path": ["students"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "status", "value": "APPROVED", "description": "PENDING | APPROVED | REJECTED | CHECKED_OUT | GRADUATED" },
+                { "key": "search", "value": "", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Student by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/students/{{studentProfileId}}"
+          }
+        },
+        {
+          "name": "Update Student",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/students/{{studentProfileId}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"department\": \"ECE\",\n  \"year\": 3\n}"
+            }
+          }
+        },
+        {
+          "name": "Approve Student",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/students/{{studentProfileId}}/approve"
+          }
+        },
+        {
+          "name": "Reject Student",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/students/{{studentProfileId}}/reject"
+          }
+        },
+        {
+          "name": "Checkout Student",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/students/{{studentProfileId}}/checkout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rooms & Beds",
+      "description": "Room management, bed allocation, and block configuration.",
+      "item": [
+        {
+          "name": "List Rooms",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/rooms?hostelId={{hostelId}}&page=1&limit=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["rooms"],
+              "query": [
+                { "key": "hostelId", "value": "{{hostelId}}" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "50" },
+                { "key": "blockId", "value": "", "disabled": true },
+                { "key": "status", "value": "", "disabled": true, "description": "AVAILABLE | OCCUPIED | PARTIALLY_OCCUPIED | UNDER_MAINTENANCE" },
+                { "key": "floor", "value": "", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Room by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const room = pm.response.json().data;",
+                  "  if (room.beds && room.beds.length > 0) {",
+                  "    pm.collectionVariables.set('bedId', room.beds[0].id);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/rooms/{{roomId}}"
+          }
+        },
+        {
+          "name": "Create Room",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.collectionVariables.set('roomId', pm.response.json().data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/rooms",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomNumber\": \"A501\",\n  \"blockId\": \"{{blockId}}\",\n  \"floor\": 5,\n  \"type\": \"DOUBLE\",\n  \"capacity\": 2,\n  \"amenities\": [\"WiFi\", \"Fan\", \"Desk\"]\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Room",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/rooms/{{roomId}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"UNDER_MAINTENANCE\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Allocate Bed to Student",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/rooms/allocate",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bedId\": \"{{bedId}}\",\n  \"studentId\": \"{{studentProfileId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Vacate Bed",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/rooms/beds/{{bedId}}/vacate"
+          }
+        },
+        {
+          "name": "List Blocks (by Hostel)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const blocks = pm.response.json().data;",
+                  "  if (blocks && blocks.length > 0) {",
+                  "    pm.collectionVariables.set('blockId', blocks[0].id);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/rooms/blocks/{{hostelId}}"
+          }
+        },
+        {
+          "name": "Create Block",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.collectionVariables.set('blockId', pm.response.json().data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/rooms/blocks",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Block C\",\n  \"hostelId\": \"{{hostelId}}\",\n  \"floors\": 3\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Complaints",
+      "description": "Complaint lifecycle: create → assign → update status → resolve.",
+      "item": [
+        {
+          "name": "List Complaints",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/complaints?hostelId={{hostelId}}&page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["complaints"],
+              "query": [
+                { "key": "hostelId", "value": "{{hostelId}}" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "status", "value": "", "disabled": true, "description": "OPEN | ASSIGNED | IN_PROGRESS | RESOLVED | CLOSED | REOPENED" },
+                { "key": "category", "value": "", "disabled": true },
+                { "key": "priority", "value": "", "disabled": true },
+                { "key": "studentId", "value": "", "disabled": true },
+                { "key": "assignedToId", "value": "", "disabled": true },
+                { "key": "search", "value": "", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Complaint by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/complaints/{{complaintId}}"
+          }
+        },
+        {
+          "name": "Create Complaint",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.collectionVariables.set('complaintId', pm.response.json().data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/complaints",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Broken window in room\",\n  \"description\": \"The window in my room is broken and needs to be repaired urgently. Glass is cracked.\",\n  \"category\": \"FURNITURE\",\n  \"priority\": \"HIGH\",\n  \"studentId\": \"{{studentProfileId}}\",\n  \"hostelId\": \"{{hostelId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Assign Complaint to Staff",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/complaints/{{complaintId}}/assign",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assignedToId\": \"{{staffUserId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Complaint Status",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/complaints/{{complaintId}}/status",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"IN_PROGRESS\",\n  \"message\": \"Technician has been dispatched to fix the issue\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Fees",
+      "description": "Fee management: create records, record payments, check balances.",
+      "item": [
+        {
+          "name": "List Fees",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/fees?hostelId={{hostelId}}&page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["fees"],
+              "query": [
+                { "key": "hostelId", "value": "{{hostelId}}" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "studentId", "value": "", "disabled": true },
+                { "key": "status", "value": "", "disabled": true, "description": "PENDING | PAID | OVERDUE | WAIVED | PARTIALLY_PAID" },
+                { "key": "type", "value": "", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Fee by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/fees/{{feeId}}"
+          }
+        },
+        {
+          "name": "Get Student Balance",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/fees/student/{{studentProfileId}}/balance"
+          }
+        },
+        {
+          "name": "Create Fee Record",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.collectionVariables.set('feeId', pm.response.json().data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/fees",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": \"{{studentProfileId}}\",\n  \"hostelId\": \"{{hostelId}}\",\n  \"type\": \"HOSTEL_FEE\",\n  \"amount\": 25000,\n  \"dueDate\": \"2026-05-15\",\n  \"remarks\": \"Semester 2 hostel fee\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Record Payment",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/fees/{{feeId}}/pay",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"paidAmount\": 25000,\n  \"paymentMethod\": \"UPI\",\n  \"transactionId\": \"TXN-2026-001\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Waive Fee",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/fees/{{feeId}}/waive",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"remarks\": \"Scholarship recipient - fee waived\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mess",
+      "description": "Mess menu management and meal booking.",
+      "item": [
+        {
+          "name": "Get Menu (by Hostel)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/mess/menu/{{hostelId}}"
+          }
+        },
+        {
+          "name": "Update Menu Item",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/mess/menu/{{hostelId}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dayOfWeek\": \"MONDAY\",\n  \"mealType\": \"BREAKFAST\",\n  \"items\": [\"Idli Sambar\", \"Dosa\", \"Chutney\", \"Coffee\"]\n}"
+            }
+          }
+        },
+        {
+          "name": "Book Meal",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  pm.collectionVariables.set('bookingId', pm.response.json().data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mess/book",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": \"{{studentProfileId}}\",\n  \"hostelId\": \"{{hostelId}}\",\n  \"date\": \"2026-04-01\",\n  \"mealType\": \"LUNCH\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Cancel Meal",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/mess/cancel",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": \"{{studentProfileId}}\",\n  \"date\": \"2026-04-01\",\n  \"mealType\": \"LUNCH\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Submit Meal Feedback",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/mess/bookings/{{bookingId}}/feedback",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"feedback\": \"Food was excellent today!\",\n  \"rating\": 5\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Student Bookings",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/mess/bookings/{{studentProfileId}}?startDate=2026-03-01&endDate=2026-04-30",
+              "host": ["{{baseUrl}}"],
+              "path": ["mess", "bookings", "{{studentProfileId}}"],
+              "query": [
+                { "key": "startDate", "value": "2026-03-01" },
+                { "key": "endDate", "value": "2026-04-30" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Monthly Mess Report",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/mess/report/{{hostelId}}?month=3&year=2026",
+              "host": ["{{baseUrl}}"],
+              "path": ["mess", "report", "{{hostelId}}"],
+              "query": [
+                { "key": "month", "value": "3" },
+                { "key": "year", "value": "2026" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Gate Passes",
+      "description": "Gate pass lifecycle: request → approve/reject → checkout → return.",
+      "item": [
+        {
+          "name": "List Gate Passes",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/gate-passes?hostelId={{hostelId}}&page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["gate-passes"],
+              "query": [
+                { "key": "hostelId", "value": "{{hostelId}}" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "studentId", "value": "", "disabled": true },
+                { "key": "status", "value": "", "disabled": true, "description": "PENDING | APPROVED | REJECTED | CHECKED_OUT | RETURNED | EXPIRED" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Gate Pass Request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.collectionVariables.set('gatePassId', pm.response.json().data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/gate-passes",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": \"{{studentProfileId}}\",\n  \"hostelId\": \"{{hostelId}}\",\n  \"type\": \"LOCAL\",\n  \"reason\": \"Need to visit the library and buy supplies from market\",\n  \"destination\": \"City Market\",\n  \"exitDate\": \"2026-04-01T09:00:00Z\",\n  \"expectedReturn\": \"2026-04-01T18:00:00Z\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Approve Gate Pass",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/gate-passes/{{gatePassId}}/approve",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"remarks\": \"Approved. Return on time.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Reject Gate Pass",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/gate-passes/{{gatePassId}}/reject",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"remarks\": \"Rejected - exams period, no outings allowed\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Mark Checked Out",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/gate-passes/{{gatePassId}}/checkout"
+          }
+        },
+        {
+          "name": "Mark Returned",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/gate-passes/{{gatePassId}}/return"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Visitors",
+      "description": "Visitor entry/exit logging.",
+      "item": [
+        {
+          "name": "List Visitors",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/visitors?hostelId={{hostelId}}&page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["visitors"],
+              "query": [
+                { "key": "hostelId", "value": "{{hostelId}}" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "search", "value": "", "disabled": true },
+                { "key": "date", "value": "", "disabled": true, "description": "YYYY-MM-DD format" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Log Visitor Entry",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.collectionVariables.set('visitorId', pm.response.json().data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/visitors",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hostelId\": \"{{hostelId}}\",\n  \"visitorName\": \"Rajesh Sharma\",\n  \"visitorPhone\": \"9876543210\",\n  \"purpose\": \"Parent visiting student\",\n  \"studentId\": \"{{studentProfileId}}\",\n  \"idProof\": \"Aadhar-XXXX-XXXX-1234\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Log Visitor Exit",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/visitors/{{visitorId}}/exit"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "description": "User notifications and announcements.",
+      "item": [
+        {
+          "name": "List My Notifications",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/notifications?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["notifications"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "unreadOnly", "value": "true", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/notifications/{{notificationId}}/read"
+          }
+        },
+        {
+          "name": "Mark All as Read",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/notifications/read-all"
+          }
+        },
+        {
+          "name": "Broadcast Announcement",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/notifications/broadcast",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hostelId\": \"{{hostelId}}\",\n  \"title\": \"Hostel Maintenance Notice\",\n  \"message\": \"Water supply will be interrupted on April 2nd from 10 AM to 2 PM for maintenance work.\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "description": "Admin analytics and reporting endpoints.",
+      "item": [
+        {
+          "name": "Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/reports/dashboard/{{hostelId}}"
+          }
+        },
+        {
+          "name": "Occupancy Report",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/reports/occupancy/{{hostelId}}"
+          }
+        },
+        {
+          "name": "Fee Report",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/reports/fees/{{hostelId}}?startDate=2026-01-01&endDate=2026-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports", "fees", "{{hostelId}}"],
+              "query": [
+                { "key": "startDate", "value": "2026-01-01" },
+                { "key": "endDate", "value": "2026-12-31" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Complaint Report",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/reports/complaints/{{hostelId}}"
+          }
+        },
+        {
+          "name": "Revenue Trend (6 months)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/reports/revenue-trend/{{hostelId}}?months=6",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports", "revenue-trend", "{{hostelId}}"],
+              "query": [
+                { "key": "months", "value": "6" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
