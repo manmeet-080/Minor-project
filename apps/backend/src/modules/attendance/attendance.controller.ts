@@ -36,3 +36,25 @@ export const dailyReport = asyncHandler(async (req: Request, res: Response) => {
   );
   success(res, result, 'Daily report retrieved');
 });
+
+export const update = asyncHandler(async (req: Request, res: Response) => {
+  const record = await attendanceService.updateAttendance(req.params.id, {
+    ...req.body,
+    markedById: req.user!.userId,
+  });
+  success(res, record, 'Attendance updated');
+});
+
+export const semesterSummary = asyncHandler(async (req: Request, res: Response) => {
+  const semester = (req.query.semester as string) === 'even' ? 'even' : 'odd';
+  const year = Number(req.query.year) || new Date().getFullYear();
+  const result = await attendanceService.getSemesterSummary(req.params.hostelId, semester, year);
+  success(res, result, 'Semester summary retrieved');
+});
+
+export const monthCalendar = asyncHandler(async (req: Request, res: Response) => {
+  const month = Number(req.query.month) || new Date().getMonth() + 1;
+  const year = Number(req.query.year) || new Date().getFullYear();
+  const result = await attendanceService.getMonthCalendar(req.params.hostelId, month, year);
+  success(res, result, 'Calendar retrieved');
+});

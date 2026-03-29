@@ -24,9 +24,17 @@ const bulkMarkSchema = z.object({
   status: z.enum(['PRESENT', 'ABSENT', 'LATE', 'ON_LEAVE']),
 });
 
+const updateSchema = z.object({
+  status: z.enum(['PRESENT', 'ABSENT', 'LATE', 'ON_LEAVE']),
+  remarks: z.string().optional(),
+});
+
 router.post('/', authenticate, authorize('STAFF', 'ADMIN', 'WARDEN', 'SUPER_ADMIN'), validate(markSchema), ctrl.mark);
 router.post('/bulk', authenticate, authorize('STAFF', 'ADMIN', 'WARDEN', 'SUPER_ADMIN'), validate(bulkMarkSchema), ctrl.bulkMark);
+router.patch('/:id', authenticate, authorize('STAFF', 'ADMIN', 'WARDEN', 'SUPER_ADMIN'), validate(updateSchema), ctrl.update);
 router.get('/student/:studentId', authenticate, ctrl.getByStudent);
 router.get('/daily/:hostelId', authenticate, authorize('STAFF', 'ADMIN', 'WARDEN', 'SUPER_ADMIN'), ctrl.dailyReport);
+router.get('/semester/:hostelId', authenticate, authorize('STAFF', 'ADMIN', 'WARDEN', 'SUPER_ADMIN'), ctrl.semesterSummary);
+router.get('/calendar/:hostelId', authenticate, authorize('STAFF', 'ADMIN', 'WARDEN', 'SUPER_ADMIN'), ctrl.monthCalendar);
 
 export default router;

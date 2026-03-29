@@ -15,6 +15,7 @@ const updateSchema = z.object({
   wardenId: z.string().uuid().optional(),
 });
 
+router.get('/', ctrl.list); // Public — needed for student registration form
 router.get('/:id', authenticate, ctrl.getById);
 router.patch('/:id', authenticate, authorize('ADMIN', 'SUPER_ADMIN'), validate(updateSchema), ctrl.update);
 

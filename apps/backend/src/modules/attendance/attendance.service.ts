@@ -119,6 +119,101 @@ export class AttendanceService {
       records,
     };
   }
+  async getSemesterSummary(hostelId: string, semester: 'odd' | 'even', year: number) {
+    // Indian semesters: Odd = Jul-Dec, Even = Jan-Jun
+    const start = semester === 'odd' ? new Date(year, 6, 1) : new Date(year, 0, 1);
+    const end = semester === 'odd' ? new Date(year, 11, 31) : new Date(year, 5, 30);
+
+    const records = await prisma.attendance.groupBy({
+      by: ['status'],
+      where: { hostelId, date: { gte: start, lte: end } },
+      _count: true,
+    });
+
+    const totalMarked = records.reduce((s, r) => s + r._count, 0);
+    const present = records.find((r) => r.status === 'PRESENT')?._count ?? 0;
+    const absent = records.find((r) => r.status === 'ABSENT')?._count ?? 0;
+    const late = records.find((r) => r.status === 'LATE')?._count ?? 0;
+    const onLeave = records.find((r) => r.status === 'ON_LEAVE')?._count ?? 0;
+
+    // Count working days (exclude Sundays) in the semester range up to today
+    const today = new Date();
+    const effectiveEnd = end > today ? today : end;
+    let workingDays = 0;
+    const d = new Date(start);
+    while (d <= effectiveEnd) {
+      if (d.getDay() !== 0) workingDays++; // Exclude Sundays
+      d.setDate(d.getDate() + 1);
+    }
+
+    const totalStudents = await prisma.studentProfile.count({
+      where: { user: { hostelId }, status: 'APPROVED' },
+    });
+
+    return {
+      semester: semester === 'odd' ? `Odd Semester (Jul-Dec ${year})` : `Even Semester (Jan-Jun ${year})`,
+      startDate: start.toISOString().split('T')[0],
+      endDate: end.toISOString().split('T')[0],
+      workingDays,
+      totalStudents,
+      totalMarked,
+      present,
+      absent,
+      late,
+      onLeave,
+      attendanceRate: totalMarked > 0 ? Math.round(((present + late) / totalMarked) * 100) : 0,
+    };
+  }
+
+  async updateAttendance(id: string, data: { status: string; remarks?: string; markedById: string }) {
+    const record = await prisma.attendance.findUnique({ where: { id } });
+    if (!record) throw new AppError(404, 'Attendance record not found');
+
+    return prisma.attendance.update({
+      where: { id },
+      data: {
+        status: data.status as AttendanceStatus,
+        remarks: data.remarks,
+        markedById: data.markedById,
+        updatedAt: new Date(),
+      },
+    });
+  }
+
+  async getMonthCalendar(hostelId: string, month: number, year: number) {
+    const start = new Date(year, month - 1, 1);
+    const end = new Date(year, month, 0);
+
+    const records = await prisma.attendance.findMany({
+      where: { hostelId, date: { gte: start, lte: end } },
+      include: {
+        student: { include: { user: { select: { name: true } } } },
+      },
+      orderBy: [{ date: 'asc' }, { student: { user: { name: 'asc' } } }],
+    });
+
+    // Group by date
+    const byDate: Record<string, { present: number; absent: number; late: number; onLeave: number; total: number }> = {};
+    const daysInMonth = end.getDate();
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const dayOfWeek = new Date(year, month - 1, day).getDay();
+      byDate[dateKey] = { present: 0, absent: 0, late: 0, onLeave: 0, total: 0 };
+      if (dayOfWeek === 0) continue; // Skip Sundays in count
+    }
+
+    for (const r of records) {
+      const dateKey = r.date.toISOString().split('T')[0];
+      if (!byDate[dateKey]) byDate[dateKey] = { present: 0, absent: 0, late: 0, onLeave: 0, total: 0 };
+      byDate[dateKey].total++;
+      if (r.status === 'PRESENT') byDate[dateKey].present++;
+      else if (r.status === 'ABSENT') byDate[dateKey].absent++;
+      else if (r.status === 'LATE') byDate[dateKey].late++;
+      else if (r.status === 'ON_LEAVE') byDate[dateKey].onLeave++;
+    }
+
+    return { month, year, calendar: byDate };
+  }
 }
 
 export const attendanceService = new AttendanceService();
