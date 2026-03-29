@@ -43,3 +43,13 @@ export const getReceipt = asyncHandler(async (req: Request, res: Response) => {
   res.setHeader('Content-Disposition', `inline; filename="receipt-${req.params.id.slice(0, 8)}.html"`);
   res.send(html);
 });
+
+export const createOrder = asyncHandler(async (req: Request, res: Response) => {
+  const order = await feesService.createPaymentOrder(req.params.id);
+  success(res, order, 'Payment order created');
+});
+
+export const verifyPayment = asyncHandler(async (req: Request, res: Response) => {
+  const fee = await feesService.verifyPayment(req.params.id, req.body);
+  success(res, fee, 'Payment verified and recorded');
+});

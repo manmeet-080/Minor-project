@@ -33,5 +33,14 @@ const waiveSchema = z.object({
 
 router.patch('/:id/waive', authenticate, authorize('ADMIN', 'SUPER_ADMIN'), validate(waiveSchema), ctrl.waive);
 router.get('/:id/receipt', authenticate, ctrl.getReceipt);
+router.post('/:id/create-order', authenticate, ctrl.createOrder);
+
+const verifyPaymentSchema = z.object({
+  razorpayPaymentId: z.string(),
+  razorpayOrderId: z.string(),
+  razorpaySignature: z.string(),
+});
+
+router.post('/:id/verify-payment', authenticate, validate(verifyPaymentSchema), ctrl.verifyPayment);
 
 export default router;

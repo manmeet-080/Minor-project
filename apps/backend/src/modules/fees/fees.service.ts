@@ -1,6 +1,10 @@
+import crypto from 'crypto';
 import { prisma } from '../../config/database.js';
 import { AppError } from '../../shared/middleware/errorHandler.js';
 import { Prisma, FeeStatus } from '@prisma/client';
+import { razorpay } from '../../config/razorpay.js';
+import { env } from '../../config/env.js';
+import { events } from '../../sockets/events.js';
 
 export class FeesService {
   async list(query: {
@@ -91,6 +95,10 @@ export class FeesService {
     return { totalDue, pendingFees: fees.length };
   }
 
+  private esc(s: string): string {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
   async generateReceipt(id: string) {
     const fee = await prisma.feeRecord.findUnique({
       where: { id },
@@ -123,14 +131,14 @@ export class FeesService {
 </style></head><body>
   <div class="header">
     <h1>Campusphere</h1>
-    <p>${fee.hostel?.name || 'Hostel'} | ${fee.hostel?.address || ''}</p>
+    <p>${this.esc(fee.hostel?.name || 'Hostel')} | ${this.esc(fee.hostel?.address || '')}</p>
     <p>Payment Receipt</p>
   </div>
   <div class="details">
-    <div><span class="label">Receipt #</span><br><span class="value">${fee.id.slice(0, 8).toUpperCase()}</span></div>
+    <div><span class="label">Receipt #</span><br><span class="value">${this.esc(fee.id.slice(0, 8).toUpperCase())}</span></div>
     <div><span class="label">Date</span><br><span class="value">${fee.paidDate ? new Date(fee.paidDate).toLocaleDateString() : 'N/A'}</span></div>
-    <div><span class="label">Student</span><br><span class="value">${fee.student?.user?.name || 'N/A'}</span></div>
-    <div><span class="label">Email</span><br><span class="value">${fee.student?.user?.email || 'N/A'}</span></div>
+    <div><span class="label">Student</span><br><span class="value">${this.esc(fee.student?.user?.name || 'N/A')}</span></div>
+    <div><span class="label">Email</span><br><span class="value">${this.esc(fee.student?.user?.email || 'N/A')}</span></div>
   </div>
   <table>
     <thead><tr><th>Description</th><th>Amount</th></tr></thead>
@@ -139,7 +147,7 @@ export class FeesService {
     </tbody>
   </table>
   <p class="total">Paid: Rs. ${Number(fee.paidAmount).toLocaleString('en-IN')}</p>
-  <p style="font-size:12px;color:#666;">Payment Method: ${fee.paymentMethod || 'N/A'}${fee.transactionId ? ' | Txn: ' + fee.transactionId : ''}</p>
+  <p style="font-size:12px;color:#666;">Payment Method: ${this.esc(fee.paymentMethod || 'N/A')}${fee.transactionId ? ' | Txn: ' + this.esc(fee.transactionId) : ''}</p>
   <div class="footer">
     <p>This is a computer-generated receipt. No signature required.</p>
     <p>Campusphere - Smart Campus Management Platform</p>
@@ -147,6 +155,86 @@ export class FeesService {
 </body></html>`;
 
     return html;
+  }
+
+  async createPaymentOrder(id: string) {
+    if (!razorpay) throw new AppError(503, 'Payment gateway not configured');
+
+    const fee = await prisma.feeRecord.findUnique({ where: { id } });
+    if (!fee) throw new AppError(404, 'Fee record not found');
+    if (fee.status === 'PAID' || fee.status === 'WAIVED') {
+      throw new AppError(400, 'Fee is already paid or waived');
+    }
+
+    const amountDue = Number(fee.amount) - Number(fee.paidAmount);
+    const order = await razorpay.orders.create({
+      amount: Math.round(amountDue * 100), // Razorpay expects paise
+      currency: 'INR',
+      receipt: `fee_${fee.id.slice(0, 8)}`,
+      notes: { feeId: fee.id, studentId: fee.studentId },
+    });
+
+    return {
+      orderId: order.id,
+      amount: amountDue,
+      currency: 'INR',
+      key: env.RAZORPAY_KEY_ID,
+    };
+  }
+
+  async verifyPayment(id: string, data: {
+    razorpayPaymentId: string;
+    razorpayOrderId: string;
+    razorpaySignature: string;
+  }) {
+    if (!env.RAZORPAY_KEY_SECRET) throw new AppError(503, 'Payment gateway not configured');
+
+    // Verify signature
+    const body = data.razorpayOrderId + '|' + data.razorpayPaymentId;
+    const expectedSignature = crypto
+      .createHmac('sha256', env.RAZORPAY_KEY_SECRET)
+      .update(body)
+      .digest('hex');
+
+    if (expectedSignature !== data.razorpaySignature) {
+      throw new AppError(400, 'Payment verification failed — invalid signature');
+    }
+
+    // Update fee record in a transaction to prevent double-payment
+    const { fee, updated, amountDue } = await prisma.$transaction(async (tx) => {
+      const fee = await tx.feeRecord.findUnique({ where: { id } });
+      if (!fee) throw new AppError(404, 'Fee record not found');
+      if (fee.status === 'PAID' || fee.status === 'WAIVED') {
+        throw new AppError(400, 'Fee is already paid or waived');
+      }
+      if (fee.transactionId === data.razorpayPaymentId) {
+        throw new AppError(400, 'Payment already processed');
+      }
+
+      const amountDue = Number(fee.amount) - Number(fee.paidAmount);
+      const updated = await tx.feeRecord.update({
+        where: { id },
+        data: {
+          paidAmount: Number(fee.amount),
+          paidDate: new Date(),
+          paymentMethod: 'UPI',
+          transactionId: data.razorpayPaymentId,
+          status: 'PAID',
+        },
+      });
+
+      return { fee, updated, amountDue };
+    });
+
+    // Emit real-time event
+    events.feePaymentRecorded(fee.hostelId, {
+      id: fee.id,
+      studentId: fee.studentId,
+      amount: amountDue,
+      status: 'PAID',
+    });
+
+    return updated;
   }
 }
 
