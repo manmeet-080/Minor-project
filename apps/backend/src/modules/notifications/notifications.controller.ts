@@ -26,3 +26,8 @@ export const broadcast = asyncHandler(async (req: Request, res: Response) => {
   const result = await notificationsService.broadcast(req.body.hostelId, req.body.title, req.body.message);
   success(res, result, 'Broadcast sent');
 });
+
+export const sos = asyncHandler(async (req: Request, res: Response) => {
+  const result = await notificationsService.sendSOS(req.user!.userId, req.user!.hostelId!);
+  success(res, result, 'SOS alert sent');
+});

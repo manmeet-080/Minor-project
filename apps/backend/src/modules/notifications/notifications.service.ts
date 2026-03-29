@@ -67,6 +67,39 @@ export class NotificationsService {
     events.broadcastNotification(hostelId, { title, message });
     return { sent: users.length };
   }
+  async sendSOS(userId: string, hostelId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, studentProfile: { select: { rollNumber: true, bed: { select: { bedNumber: true, room: { select: { roomNumber: true, block: { select: { name: true } } } } } } } } },
+    });
+
+    const location = user?.studentProfile?.bed
+      ? `${user.studentProfile.bed.room?.block?.name} - Room ${user.studentProfile.bed.room?.roomNumber}`
+      : 'Unknown location';
+
+    const title = 'EMERGENCY SOS ALERT';
+    const message = `Emergency SOS triggered by ${user?.name || 'Unknown'} (${user?.studentProfile?.rollNumber || 'N/A'}) at ${location}`;
+
+    // Notify all admins and wardens in the hostel
+    const staff = await prisma.user.findMany({
+      where: { hostelId, role: { in: ['ADMIN', 'WARDEN', 'SUPER_ADMIN'] }, isActive: true },
+      select: { id: true },
+    });
+
+    await prisma.notification.createMany({
+      data: staff.map((s) => ({
+        userId: s.id,
+        title,
+        message,
+        type: 'WARNING' as NotificationType,
+      })),
+    });
+
+    // Real-time alert
+    events.broadcastNotification(hostelId, { title, message });
+
+    return { alerted: staff.length, message };
+  }
 }
 
 export const notificationsService = new NotificationsService();

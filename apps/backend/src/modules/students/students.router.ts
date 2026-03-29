@@ -42,4 +42,10 @@ router.post('/:id/approve', authenticate, authorize('ADMIN', 'WARDEN', 'SUPER_AD
 router.post('/:id/reject', authenticate, authorize('ADMIN', 'WARDEN', 'SUPER_ADMIN'), validate(rejectSchema), ctrl.reject);
 router.post('/:id/checkout', authenticate, authorize('ADMIN', 'WARDEN', 'SUPER_ADMIN'), ctrl.checkout);
 
+const transferSchema = z.object({
+  newBedId: z.string().uuid(),
+});
+
+router.post('/:id/transfer', authenticate, authorize('ADMIN', 'WARDEN', 'SUPER_ADMIN'), validate(transferSchema), ctrl.transfer);
+
 export default router;
